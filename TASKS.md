@@ -422,6 +422,23 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 
 **Validation evidence:** `ListingAndNotificationRegressionTest` passes 2 tests with 12 assertions. It verifies newest-first and role-scoped document rows, both role-specific column sequences, no notification at recipient assignment, notification creation at ready-for-pickup placement for South Campus, persistence after marking read, cross-user deletion denial, and explicit owner deletion. The complete suite passes 129 tests with 633 assertions; Pint, Vite, and `git diff --check` pass. Browser validation shows the five Level 2 records in descending creation order with `DRMS-DISTRICT-2026-000005` first.
 
+#### Temporary Codespaces Demo Deployment
+
+**Status:** In Progress
+
+- [x] Confirm the repository is privately owned by the authenticated personal GitHub account with administrator access.
+- [x] Confirm a 2-core Codespaces machine is available and no pilot/production deployment is authorized.
+- [x] Define the synthetic demo boundary separately from the blocked Phase 12 pilot release.
+- [ ] Add and validate the PHP 8.4, Node.js 24, and private MySQL 8.4 dev-container profile.
+- [ ] Provision the required repository Codespaces secrets without exposing their values.
+- [ ] Commit and push the reviewed demo configuration.
+- [ ] Create the Codespace from the approved branch.
+- [ ] Verify clean migrations/seeding, tests, formatter, audits, frontend build, queue worker, and smoke checks.
+- [ ] Make only port 8000 public and verify the HTTPS login endpoint.
+- [ ] Record the Codespace, revision, URL, validation evidence, limitations, and stop procedure.
+
+**Boundary:** This is a temporary, operator-attended environment containing fabricated data only. It does not satisfy the official pilot assets, named contacts, final-domain QR, or acceptance-signature requirements and must not change the `NOT READY FOR PILOT RELEASE` recommendation.
+
 ## 5. Validation Status
 
 | Area | Status | Evidence |

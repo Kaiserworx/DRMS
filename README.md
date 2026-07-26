@@ -9,8 +9,9 @@
 - [Pilot user guide](PILOT_USER_GUIDE.md)
 - [Administrator guide](ADMINISTRATOR_GUIDE.md)
 - [Deployment and cost plan](DEPLOYMENT_PLAN.md)
+- [Temporary GitHub Codespaces demo runbook](CODESPACES_DEMO_RUNBOOK.md)
 
-DRMS is currently in **Phase 11 — Audit Hardening, Security Review, and Operational Readiness**. Phases 0–10 are approved. Phase 12 UAT has not started.
+Phases 0–11 are approved and the technical Phase 12 scenarios pass. Phase 12 remains blocked for official pilot assets, named operational contacts, final-domain QR validation, and acceptance signatures. The temporary GitHub Codespaces profile is a fabricated-data demonstration and is not a pilot or production release.
 
 The governing files are `AGENTS.md`, `CONSTRAINTS.md`, `PRD.md`, `PLAN.md`, and `TASKS.md`.
 
@@ -69,6 +70,18 @@ The normal seed creates the default deployment settings, one example organizatio
 - `encoder` / `encoder@drms.local` as Level 1.
 
 No default password is committed. Demo users are never seeded in production.
+
+## Temporary GitHub Codespaces Demo
+
+The repository contains a reproducible Codespaces profile for scheduled, operator-attended demonstrations:
+
+- PHP 8.4 and Node.js 24 in the application container.
+- MySQL 8.4 on the private container network.
+- Database-backed sessions, cache, and notification queue.
+- Debug and real email delivery disabled.
+- Public forwarding for Laravel port 8000 only.
+
+Follow [CODESPACES_DEMO_RUNBOOK.md](CODESPACES_DEMO_RUNBOOK.md). Use only fabricated records and stop the Codespace after the demonstration to control access and compute usage.
 
 ## Notification Delivery
 
@@ -165,4 +178,4 @@ On-screen reports are paginated at 25 rows. CSV exports reuse the same validated
 - **Origin types:** Organizational Unit, Managing Office, Upstream Office, and External Organization.
 - **Operational status:** Active and Inactive.
 
-Do not begin Phase 11 until the Phase 10 gate is reviewed and approved in `TASKS.md`.
+Current phase gates, validation evidence, and blockers are recorded in `TASKS.md`.

@@ -353,3 +353,27 @@ When a phase fails:
 7. Record remaining risks and repeat the phase approval decision.
 
 Critical and high defects block phase approval and pilot release.
+
+## 6. Temporary GitHub Codespaces Demo Deployment
+
+The user approved a temporary demo deployment after the Phase 11 gate. This work is independent of the blocked Phase 12 pilot-release gate and must not change the `NOT READY FOR PILOT RELEASE` recommendation.
+
+**Technical approach:**
+
+1. Add a reproducible dev-container profile pinned to PHP 8.4, Node.js 24, and private MySQL 8.4.
+2. Store the demo and database credentials only as GitHub Codespaces secrets.
+3. Build from the approved `codex/complete-phases-6-12` branch on the smallest available 2-core machine.
+4. Create a clean MySQL database and seed only fabricated demonstration users and reference data.
+5. Run the full automated suite, formatter, dependency audits, frontend build, and a Codespaces smoke check.
+6. Start the Laravel server and database queue worker.
+7. Make only port 8000 public and verify the generated HTTPS endpoint.
+8. Keep the environment operator-attended and stop it after demonstrations.
+
+**Gate:**
+
+- No local database, real record, local credential, or development QR token is copied.
+- PHP 8.4, Node.js 24, and MySQL 8.4 are verified inside the Codespace.
+- Debug and email delivery are disabled.
+- Only the Laravel port is publicly forwarded.
+- Login, migrations, queue health, and the public HTTPS endpoint pass.
+- Demo limitations and stop/reset procedures are documented.
