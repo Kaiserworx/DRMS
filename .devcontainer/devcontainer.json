@@ -23,6 +23,6 @@
         "storage": "32gb"
     },
     "postCreateCommand": "bash .devcontainer/setup-demo.sh",
-    "postStartCommand": "bash .devcontainer/start-demo.sh",
+    "postStartCommand": "setsid -f bash .devcontainer/start-demo.sh",
     "remoteUser": "vscode"
 }
