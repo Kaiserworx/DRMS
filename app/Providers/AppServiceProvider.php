@@ -66,11 +66,9 @@ class AppServiceProvider extends ServiceProvider
                 ->by('report-export:'.($request->user()?->getAuthIdentifier() ?? 'guest').':'.$request->ip()),
         );
 
-        $applicationUrl = rtrim((string) config('app.url'), '/');
-
-        if (parse_url($applicationUrl, PHP_URL_SCHEME) === 'https') {
+        if ($this->app->isProduction()
+            && str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
-            URL::useOrigin($applicationUrl);
         }
     }
 }

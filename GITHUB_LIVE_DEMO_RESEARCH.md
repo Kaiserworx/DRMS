@@ -2,8 +2,8 @@
 
 **Prepared:** 2026-07-26
 **Repository:** `https://github.com/Kaiserworx/DRMS.git`
-**Local branch inspected:** `codex/complete-phases-6-12`
-**Status:** Temporary Codespaces demo deployed and verified on 2026-07-26
+**Local branch inspected:** `main`
+**Status:** Research and proposed implementation only; nothing has been deployed
 
 ## 1. Executive Finding
 
@@ -64,15 +64,18 @@ GitHub documents that a public forwarded port is accessible to anyone who knows 
 
 Source: [Forwarding ports in a codespace](https://docs.github.com/en/codespaces/developing-in-a-codespace/forwarding-ports-in-your-codespace)
 
-### 3.2 Implemented Files
+### 3.2 Files Proposed for Implementation
 
-| File | Purpose |
+No files in this section have been created yet.
+
+| Proposed file | Purpose |
 |---|---|
 | `.devcontainer/devcontainer.json` | Define the PHP 8.4 development container, forwarded port, lifecycle commands, and Codespaces settings |
 | `.devcontainer/compose.yaml` | Run the application container and private MySQL 8.4 service |
 | `.devcontainer/Dockerfile` | Install only the required PHP extensions and system packages |
 | `.devcontainer/setup-demo.sh` | Install locked dependencies, wait for MySQL, migrate, seed, and build |
 | `.env.codespaces.example` | Document non-secret Codespaces demo configuration |
+| `.github/workflows/demo-readiness.yml` | Optional validation workflow; it tests the demo revision but does not host it |
 | `CODESPACES_DEMO_RUNBOOK.md` | Start, share, smoke-test, reset, and stop procedures |
 
 The implementation should pin PHP 8.4 and MySQL 8.4 rather than use floating major versions. It should use the existing `composer.lock` and `package-lock.json`.

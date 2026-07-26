@@ -422,38 +422,6 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 
 **Validation evidence:** `ListingAndNotificationRegressionTest` passes 2 tests with 12 assertions. It verifies newest-first and role-scoped document rows, both role-specific column sequences, no notification at recipient assignment, notification creation at ready-for-pickup placement for South Campus, persistence after marking read, cross-user deletion denial, and explicit owner deletion. The complete suite passes 129 tests with 633 assertions; Pint, Vite, and `git diff --check` pass. Browser validation shows the five Level 2 records in descending creation order with `DRMS-DISTRICT-2026-000005` first.
 
-#### Temporary Codespaces Demo Deployment
-
-**Status:** Completed
-
-- [x] Confirm the repository is privately owned by the authenticated personal GitHub account with administrator access.
-- [x] Confirm a 2-core Codespaces machine is available and no pilot/production deployment is authorized.
-- [x] Define the synthetic demo boundary separately from the blocked Phase 12 pilot release.
-- [x] Add and validate the PHP 8.4, Node.js 24, and private MySQL 8.4 dev-container profile.
-- [x] Provision the required repository Codespaces secrets without exposing their values.
-- [x] Commit and push the reviewed demo configuration.
-- [x] Create the Codespace from the approved branch.
-- [x] Verify clean migrations/seeding, tests, formatter, audits, frontend build, queue worker, and smoke checks.
-- [x] Make only port 8000 public and verify the HTTPS login endpoint.
-- [x] Record the Codespace, revision, URL, validation evidence, limitations, and stop procedure.
-
-**Deployment evidence (2026-07-26):** Codespace `refactored-waffle-r4g46jjxqx55359w` runs the `codex/complete-phases-6-12` branch on a 2-core, 8 GB RAM, 32 GB machine at revision `fb4359c`. The public application endpoint is `https://refactored-waffle-r4g46jjxqx55359w-8000.app.github.dev/admin/login`. Repository Codespaces secrets `DRMS_DEMO_PASSWORD`, `DRMS_DB_PASSWORD`, and `DRMS_DB_ROOT_PASSWORD` were confirmed without exposing their values. The creation workflow completed locked dependency installation, the Vite build, clean MySQL migration/seeding, 129 automated tests with 633 assertions, Pint, Composer audit, npm audit, and optimization. The hosted smoke check verified PHP 8.4, Node.js 24, MySQL 8.4, applied migrations, healthy `notifications` and `default` database queues, and the local login route. Browser validation then confirmed port 8000 as the only forwarded public port, an active Laravel process, and the public DRMS sign-in page. Revision `fb4359c` detaches the lifecycle start command for more reliable restarts; the current session was started manually before that hardening was pulled and remains healthy.
-
-**Boundary:** This is a temporary, operator-attended environment containing fabricated data only. It does not satisfy the official pilot assets, named contacts, final-domain QR, or acceptance-signature requirements and must not change the `NOT READY FOR PILOT RELEASE` recommendation.
-
-#### Codespaces HTTPS Asset Correction
-
-**Status:** In Progress
-
-- [x] Reproduce the unstyled public login page and identify the failed asset-origin behavior.
-- [x] Generate Filament assets from the configured HTTPS application origin when Laravel is behind the Codespaces HTTP proxy.
-- [x] Add regression coverage for public HTTPS Filament CSS and JavaScript URLs.
-- [x] Run the focused regression test, complete automated suite, formatter check, and frontend production build.
-- [x] Deploy the correction to the active Codespace.
-- [ ] Verify the styled public login page and absence of browser console errors.
-
-**Current evidence:** The hosted login HTML generated absolute Filament asset links from the proxy's internal HTTP origin, which caused the public HTTPS page to render without styles or JavaScript. The correction uses the configured HTTPS `APP_URL` as Laravel's URL-generation origin. The focused regression test passes 1 test with 3 assertions; the complete suite passes 130 tests with 636 assertions; Pint and the Vite production build pass. Revision `d01da8e` is deployed to the active Codespace, optimized caches were rebuilt, and the hosted login HTML now references HTTPS CSS and JavaScript assets on the public Codespaces hostname. Browser visual validation remains pending because the controlled browser cannot inspect the `app.github.dev` forwarded-port domain; the operator must reload the public page and confirm the rendered interface and browser console.
-
 ## 5. Validation Status
 
 | Area | Status | Evidence |
@@ -472,7 +440,6 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 | GitHub baseline backup | Completed | Baseline commit `d13f9178c4010ea171bf49c28a34ea15b024d92a` verified on `Kaiserworx/DRMS` `main` |
 | Security review | Completed | Automated review, audits, backup/restore rehearsal, Activity Audit review, and QR workflow evidence pass |
 | UAT | Blocked | All 17 technical scenarios pass; official pilot assets, named contacts, and acceptance signatures remain outstanding |
-| Temporary Codespaces demo | Completed | 2-core Codespace `refactored-waffle-r4g46jjxqx55359w` at revision `fb4359c`; hosted smoke check and public HTTPS login passed with only port 8000 exposed |
 
 ## 6. Current Recommendation
 
