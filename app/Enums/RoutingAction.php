@@ -14,6 +14,7 @@ enum RoutingAction: string
     case MarkForDistribution = 'mark_for_distribution';
     case AssignRecipientUnit = 'assign_recipient_unit';
     case PlaceInReceivingBox = 'place_in_receiving_box';
+    case ClaimByRecipientUnit = 'claim_by_recipient_unit';
     case Cancel = 'cancel';
 
     public function label(): string
@@ -33,6 +34,7 @@ enum RoutingAction: string
             self::MarkForDistribution => 'Mark for Distribution',
             self::AssignRecipientUnit => 'Assign Recipient Unit',
             self::PlaceInReceivingBox => "Place in {$receivingBox}",
+            self::ClaimByRecipientUnit => "Confirm Receipt by {$levelOneUnit}",
             self::Cancel => 'Cancel Document',
         };
     }

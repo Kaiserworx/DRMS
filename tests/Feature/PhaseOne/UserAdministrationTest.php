@@ -7,7 +7,7 @@ use App\Enums\UserRole;
 use App\Filament\Auth\EditProfile;
 use App\Filament\Pages\ManageDeploymentSettings;
 use App\Filament\Resources\Users\Pages\CreateUser;
-use App\Filament\Widgets\PhaseOneOverview;
+use App\Filament\Widgets\OperationalOverview;
 use App\Models\DeploymentSetting;
 use App\Models\OrganizationalUnit;
 use App\Models\User;
@@ -178,7 +178,7 @@ class UserAdministrationTest extends TestCase
         $encoder = User::factory()->levelOne($unit)->create();
         $this->actingAs($encoder);
 
-        Livewire::test(PhaseOneOverview::class)
+        Livewire::test(OperationalOverview::class)
             ->assertSee('Campus Encoder')
             ->assertSee($unit->unit_name);
     }

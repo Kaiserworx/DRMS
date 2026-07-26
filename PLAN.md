@@ -2,7 +2,7 @@
 
 ## Approved MVP Implementation Plan
 
-**Status:** Phase 5 approved; Phase 6 not started  
+**Status:** Phase 12 technical UAT complete; pilot release blocked pending official pilot assets, named contacts, and acceptance sign-off
 **Requirements authority:** `PRD.md`  
 **Detailed source:** `District_Records_Management_System_Codex_Phase_By_Phase_Work_Prompts.md`  
 **Execution tracker:** `TASKS.md`
@@ -223,20 +223,20 @@ The implementation will follow these cross-phase rules:
 
 ### Phase 8 — Notifications and Reminders
 
-**Objective:** Add scoped in-system notifications and controlled optional email delivery.
+**Objective:** Add persistent, scoped ready-for-pickup notifications and controlled optional email delivery.
 
 **Deliverables:**
 
-- Notifications for documented assignment, placement, significant status, upstream return, overdue/unclaimed, cancellation, and correction events.
+- One notification event: Level 2 placement of a recipient record into the matching unit's receiving box, making it ready for pickup.
 - Active designated recipient selection.
 - Dispatch only after successful commit.
-- Duplicate prevention and role-scoped read/unread behavior.
+- Duplicate prevention, role-scoped read/unread behavior, and persistence until explicit owner deletion.
 - Queued delivery when supported.
 - Tested email or documented feature flag.
 
 **Gate:**
 
-- Correct unit users are notified and other units are not.
+- Correct unit users are notified only at ready-for-pickup placement; other units and other workflow events are not.
 - Rolled-back and repeated actions do not generate incorrect notifications.
 - Inactive users are excluded.
 - Notification payloads use the tracking number and a safe URL.

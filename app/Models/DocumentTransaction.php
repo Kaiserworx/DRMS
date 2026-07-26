@@ -22,6 +22,8 @@ class DocumentTransaction extends Model
         'performed_by',
         'transaction_date',
         'remarks',
+        'receiver_name',
+        'receiver_position',
         'ip_address',
         'device_info',
     ];

@@ -16,6 +16,9 @@ class DocumentPolicy
     {
         return $user->isLevelTwo()
             || $document->submitting_unit_id === $user->organizational_unit_id
+            || $document->creator()
+                ->where('organizational_unit_id', $user->organizational_unit_id)
+                ->exists()
             || $document->recipients()
                 ->where('recipient_unit_id', $user->organizational_unit_id)
                 ->exists();
@@ -29,6 +32,11 @@ class DocumentPolicy
     public function update(User $user, Document $document): bool
     {
         return false;
+    }
+
+    public function classifyOrigin(User $user, Document $document): bool
+    {
+        return $user->isLevelTwo() && $document->origin_id === null;
     }
 
     public function delete(User $user, Document $document): bool

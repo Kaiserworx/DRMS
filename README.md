@@ -1,6 +1,16 @@
 # District Records Management System (DRMS)
 
-DRMS is currently at the **Phase 2 approval gate**. The Phase 1 foundation and the Phase 2 document-type, document-origin, controlled-value, normalization, active-selection, and deletion-protection requirements are implemented and technically validated. Phase 3 has not started.
+## Operational documentation
+
+- [Deployment checklist](DEPLOYMENT_CHECKLIST.md)
+- [Backup and restore](BACKUP_RESTORE.md)
+- [Rollback](ROLLBACK.md)
+- [Deployment-profile and hierarchy migration](PROFILE_MIGRATION.md)
+- [Pilot user guide](PILOT_USER_GUIDE.md)
+- [Administrator guide](ADMINISTRATOR_GUIDE.md)
+- [Deployment and cost plan](DEPLOYMENT_PLAN.md)
+
+DRMS is currently in **Phase 11 — Audit Hardening, Security Review, and Operational Readiness**. Phases 0–10 are approved. Phase 12 UAT has not started.
 
 The governing files are `AGENTS.md`, `CONSTRAINTS.md`, `PRD.md`, `PLAN.md`, and `TASKS.md`.
 
@@ -60,6 +70,22 @@ The normal seed creates the default deployment settings, one example organizatio
 
 No default password is committed. Demo users are never seeded in production.
 
+## Notification Delivery
+
+In-system notifications are stored and delivered through Laravel's configured queue. Run a queue worker in every environment that requires notification delivery:
+
+```powershell
+php artisan queue:work --queue=notifications,default
+```
+
+Level 1 receives a notification only when Level 2 places that unit's recipient record in its receiving box and makes it ready for pickup. Read notifications remain in the list until the owning user explicitly deletes them.
+
+Email is disabled by default because production email infrastructure is not yet approved. Enable it only after the configured mailer has been tested:
+
+```dotenv
+DRMS_NOTIFICATION_EMAIL_ENABLED=true
+```
+
 ## Test Database
 
 The dedicated MySQL database `drms_test` is separate from `drms`. To validate migrations against MySQL:
@@ -100,6 +126,23 @@ npm audit
 npm run build
 ```
 
+## Phase 9 Search Capacity Assumption
+
+The Phase 9 indexes and bounded-query checks target the initial operational deployment at up to approximately 100,000 documents, five recipient rows per document, and fifteen transaction rows per document. This is a documented planning assumption, not a product limit. Query plans and index selectivity must be rechecked with production-like data before a larger rollout; full-text or external search infrastructure is not part of the current MVP.
+
+## Phase 10 Dashboard and Time-Metric Definitions
+
+Dashboard and report values are calculated from the same server-side document visibility scope used by search and direct access.
+
+- Document-state cards count distinct authorized documents in the named current status.
+- `Ready for Pickup`, `Claimed today`, `In receiving boxes`, and `Pending confirmation` are derived from authorized recipient rows. The first three document-oriented cards count distinct documents; `Pending confirmation` counts recipient-unit confirmations still outstanding.
+- `Overdue or unclaimed` counts overdue, non-completed, non-cancelled documents plus ready recipient items whose document is not already counted as overdue.
+- `Average processing time` is the elapsed time from the first unit-submission transaction to the transaction that completes the document.
+- `Average pickup time` is the elapsed time from recipient placement in a receiving box to confirmed recipient claim.
+- Incomplete intervals are excluded from averages, and the report displays the completed observation count.
+
+On-screen reports are paginated at 25 rows. CSV exports reuse the same validated filters and authorization scope, stream rows in bounded batches, exclude internal identifiers, and prefix spreadsheet-formula payloads with an apostrophe.
+
 ## Phase 2 Architecture and Naming Decisions
 
 - **Testing:** Use the repository's configured PHPUnit test framework. Add feature tests for authorization and workflows and unit tests for isolated domain rules.
@@ -122,4 +165,4 @@ npm run build
 - **Origin types:** Organizational Unit, Managing Office, Upstream Office, and External Organization.
 - **Operational status:** Active and Inactive.
 
-Do not begin Phase 3 until the Phase 2 gate is reviewed and approved in `TASKS.md`.
+Do not begin Phase 11 until the Phase 10 gate is reviewed and approved in `TASKS.md`.

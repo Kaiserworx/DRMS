@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Enums\DocumentStatus;
+use App\Enums\OperationalStatus;
 use App\Enums\PhysicalLocation;
+use App\Enums\RecipientStatus;
 use App\Enums\RoutingAction;
 use App\Models\Document;
 use App\Models\DocumentRecipient;
 use App\Models\DocumentTransaction;
+use App\Models\ReceivingBox;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
@@ -18,6 +21,7 @@ class DocumentRoutingService
 {
     public function __construct(
         private readonly RecipientAssignmentService $recipientAssignments,
+        private readonly DocumentNotificationDispatcher $notifications,
     ) {}
 
     /**
@@ -38,11 +42,11 @@ class DocumentRoutingService
 
         if ($action === RoutingAction::PlaceInReceivingBox) {
             throw ValidationException::withMessages([
-                'action' => 'Receiving-box placement is reserved for Phase 6.',
+                'action' => 'Receiving-box placement requires a recipient assignment and receiving box.',
             ]);
         }
 
-        return DB::transaction(function () use ($actor, $document, $action, $remarks, $context): DocumentTransaction {
+        $transaction = DB::transaction(function () use ($actor, $document, $action, $remarks, $context): DocumentTransaction {
             /** @var Document $locked */
             $locked = Document::query()->whereKey($document)->lockForUpdate()->firstOrFail();
             $this->authorize($actor, $locked, $action);
@@ -80,6 +84,10 @@ class DocumentRoutingService
                 context: $context,
             );
         });
+
+        $this->notifications->dispatchForTransaction($transaction);
+
+        return $transaction;
     }
 
     /**
@@ -94,7 +102,7 @@ class DocumentRoutingService
         ?string $remarks = null,
         array $context = [],
     ): Collection {
-        return DB::transaction(function () use ($actor, $document, $unitIds, $remarks, $context): Collection {
+        [$recipients, $transactions] = DB::transaction(function () use ($actor, $document, $unitIds, $remarks, $context): array {
             /** @var Document $locked */
             $locked = Document::query()->whereKey($document)->lockForUpdate()->firstOrFail();
 
@@ -110,8 +118,8 @@ class DocumentRoutingService
 
             $recipients = $this->recipientAssignments->assign($actor, $locked, $unitIds, $remarks);
 
-            foreach ($recipients as $recipient) {
-                $this->record(
+            $transactions = $recipients->map(function (DocumentRecipient $recipient) use ($actor, $locked, $remarks, $context): DocumentTransaction {
+                return $this->record(
                     actor: $actor,
                     document: $locked,
                     action: RoutingAction::AssignRecipientUnit,
@@ -123,10 +131,109 @@ class DocumentRoutingService
                     context: $context,
                     recipient: $recipient,
                 );
+            });
+
+            return [$recipients, $transactions];
+        });
+
+        $transactions->each(fn (DocumentTransaction $transaction): int => $this->notifications
+            ->dispatchForTransaction($transaction));
+
+        return $recipients;
+    }
+
+    /**
+     * @param  array{ip_address?: ?string, device_info?: ?string}  $context
+     */
+    public function placeInReceivingBox(
+        User $actor,
+        DocumentRecipient $recipient,
+        ReceivingBox $box,
+        ?string $remarks = null,
+        array $context = [],
+    ): DocumentTransaction {
+        if (! $actor->isLevelTwo()) {
+            throw new AuthorizationException('Only Level 2 users may place documents in receiving boxes.');
+        }
+
+        $transaction = DB::transaction(function () use ($actor, $recipient, $box, $remarks, $context): DocumentTransaction {
+            /** @var Document $lockedDocument */
+            $lockedDocument = Document::query()
+                ->whereKey($recipient->document_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+            /** @var DocumentRecipient $lockedRecipient */
+            $lockedRecipient = DocumentRecipient::query()
+                ->whereKey($recipient)
+                ->where('document_id', $lockedDocument->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            /** @var ReceivingBox $lockedBox */
+            $lockedBox = ReceivingBox::query()
+                ->whereKey($box)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (! in_array($lockedDocument->current_status, [
+                DocumentStatus::ForDistribution,
+                DocumentStatus::ReadyForPickup,
+            ], true)) {
+                throw ValidationException::withMessages([
+                    'recipient' => 'The document is not eligible for receiving-box placement.',
+                ]);
             }
 
-            return $recipients;
+            if ($lockedRecipient->recipient_status !== RecipientStatus::Assigned
+                || $lockedRecipient->receiving_box_id !== null
+                || $lockedRecipient->date_placed !== null) {
+                throw ValidationException::withMessages([
+                    'recipient' => 'This recipient assignment is no longer eligible for placement.',
+                ]);
+            }
+
+            if ($lockedBox->organizational_unit_id !== $lockedRecipient->recipient_unit_id) {
+                throw ValidationException::withMessages([
+                    'receiving_box' => 'The receiving box must belong to the assigned recipient unit.',
+                ]);
+            }
+
+            if ($lockedBox->status !== OperationalStatus::Active
+                || $lockedBox->organizationalUnit()->where('status', OperationalStatus::Active->value)->doesntExist()) {
+                throw ValidationException::withMessages([
+                    'receiving_box' => 'Documents may only be placed in an active box for an active unit.',
+                ]);
+            }
+
+            $previousStatus = $lockedDocument->current_status;
+            $previousLocation = $lockedDocument->current_location;
+            $placedAt = now();
+
+            $lockedRecipient->applyPlacementState($lockedBox, $placedAt);
+            $lockedRecipient->save();
+
+            $lockedDocument->applyRoutingState(
+                DocumentStatus::ReadyForPickup,
+                PhysicalLocation::ReceivingBox,
+            );
+            $lockedDocument->save();
+
+            return $this->record(
+                actor: $actor,
+                document: $lockedDocument,
+                action: RoutingAction::PlaceInReceivingBox,
+                previousStatus: $previousStatus,
+                newStatus: DocumentStatus::ReadyForPickup,
+                fromLocation: $previousLocation,
+                toLocation: PhysicalLocation::ReceivingBox,
+                remarks: $remarks,
+                context: $context,
+                recipient: $lockedRecipient,
+            );
         });
+
+        $this->notifications->dispatchForTransaction($transaction);
+
+        return $transaction;
     }
 
     /**
@@ -210,7 +317,9 @@ class DocumentRoutingService
             ], true)
                 ? [DocumentStatus::Cancelled, $document->current_location]
                 : null,
-            RoutingAction::AssignRecipientUnit, RoutingAction::PlaceInReceivingBox => null,
+            RoutingAction::AssignRecipientUnit,
+            RoutingAction::PlaceInReceivingBox,
+            RoutingAction::ClaimByRecipientUnit => null,
         };
 
         if ($transition === null) {

@@ -208,6 +208,8 @@ Each document must include at least:
 
 Level 1 submitting-unit identity must be derived from the authenticated user and never trusted from form input.
 
+Document listings for both authorization levels must default to the latest created document first, with a stable newest-first order for records created at the same time.
+
 ### 6.5 Tracking Numbers
 
 - Format tracking numbers as `DRMS-{OFFICE_CODE}-YYYY-000001`.
@@ -281,10 +283,13 @@ One claim submission should be atomic. The system must revalidate and protect ea
 ### 6.10 Notifications
 
 - Store in-system notifications.
-- Notify active designated organizational-unit users after successful commit for defined events.
+- Notify active Level 1 users of the matching organizational unit only after Level 2 places their recipient record in the unit's receiving box and it becomes ready for pickup.
+- Do not create Level 1 notifications for recipient assignment alone, ordinary status changes, upstream movement, cancellation, correction, or unclaimed reminders.
 - Avoid duplicate notifications for repeated actions.
 - Keep notification failures from corrupting document workflow state.
 - Scope each user's notification access.
+- Keep read and unread notifications in the user's notification list. Opening or marking a notification as read must not delete it.
+- Delete a stored notification only through an explicit manual action by its owning user.
 - Use queued delivery when supported by the deployment.
 - Email delivery is optional; it must either be tested and operational or explicitly feature-flagged and documented.
 
@@ -408,4 +413,3 @@ The MVP is successful when:
 - No known critical or high-severity vulnerability remains.
 - Backup, restore, rollback, deployment, administrator, and pilot-user documentation is complete.
 - UAT has no unresolved critical or high defects, medium defects have documented dispositions, and the release receives an explicit readiness recommendation.
-

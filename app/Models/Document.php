@@ -20,6 +20,8 @@ class Document extends Model
 
     private bool $routingStateChangeAllowed = false;
 
+    private bool $originClassificationAllowed = false;
+
     protected $fillable = [
         'document_type_id',
         'subject',
@@ -44,10 +46,16 @@ class Document extends Model
                 && ! $document->routingStateChangeAllowed) {
                 throw new LogicException('Document status and location may only change through the routing service.');
             }
+
+            if (($document->isDirty('origin_id') || $document->isDirty('origin_reference_no'))
+                && ! $document->originClassificationAllowed) {
+                throw new LogicException('Document origin may only be defined through the classification service.');
+            }
         });
 
         static::saved(function (self $document): void {
             $document->routingStateChangeAllowed = false;
+            $document->originClassificationAllowed = false;
         });
     }
 
@@ -63,6 +71,8 @@ class Document extends Model
 
         return $query->where(function (Builder $query) use ($user): void {
             $query->where('submitting_unit_id', $user->organizational_unit_id)
+                ->orWhereHas('creator', fn (Builder $query) => $query
+                    ->where('organizational_unit_id', $user->organizational_unit_id))
                 ->orWhereHas('recipients', fn (Builder $query) => $query
                     ->where('recipient_unit_id', $user->organizational_unit_id));
         });
@@ -108,6 +118,13 @@ class Document extends Model
         $this->routingStateChangeAllowed = true;
         $this->current_status = $status;
         $this->current_location = $location;
+    }
+
+    public function applyOriginClassification(int $originId, ?string $originReferenceNo): void
+    {
+        $this->originClassificationAllowed = true;
+        $this->origin_id = $originId;
+        $this->origin_reference_no = $originReferenceNo;
     }
 
     protected function casts(): array

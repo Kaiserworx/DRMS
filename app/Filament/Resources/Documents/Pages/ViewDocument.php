@@ -2,17 +2,23 @@
 
 namespace App\Filament\Resources\Documents\Pages;
 
+use App\Enums\DocumentStatus;
 use App\Enums\OperationalStatus;
+use App\Enums\RecipientStatus;
 use App\Enums\RoutingAction;
 use App\Filament\Resources\Documents\DocumentResource;
+use App\Models\DocumentOrigin;
+use App\Models\DocumentRecipient;
 use App\Models\OrganizationalUnit;
 use App\Models\User;
+use App\Services\DocumentClassificationService;
 use App\Services\DocumentRoutingService;
 use App\Services\RecipientAssignmentService;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -56,6 +62,31 @@ class ViewDocument extends ViewRecord
             ->all();
 
         return [
+            Action::make('classifyOrigin')
+                ->label('Define origin')
+                ->icon('heroicon-o-map-pin')
+                ->visible(fn (): bool => $actor->can('classifyOrigin', $this->record))
+                ->schema([
+                    Select::make('origin_id')
+                        ->label('Official document origin')
+                        ->options(DocumentOrigin::activeOptions())
+                        ->searchable()
+                        ->required(),
+                    TextInput::make('origin_reference_no')
+                        ->label('Origin reference number')
+                        ->maxLength(255),
+                ])
+                ->action(function (array $data) use ($actor): void {
+                    app(DocumentClassificationService::class)->classifyOrigin(
+                        $actor,
+                        $this->record,
+                        (int) $data['origin_id'],
+                        $data['origin_reference_no'] ?? null,
+                    );
+                    $this->record->refresh();
+                    Notification::make()->title('Official origin defined')->success()->send();
+                    $this->redirect(DocumentResource::getUrl('view', ['record' => $this->record]));
+                }),
             ...$routingActions,
             Action::make('assignRecipients')
                 ->label('Assign recipients')
@@ -97,7 +128,11 @@ class ViewDocument extends ViewRecord
                 ->color('danger')
                 ->visible(fn (): bool => Filament::auth()->user() instanceof User
                     && Filament::auth()->user()->isLevelTwo()
-                    && $this->record->recipients()->exists())
+                    && $this->record->recipients()
+                        ->where('recipient_status', RecipientStatus::Assigned->value)
+                        ->whereNull('receiving_box_id')
+                        ->whereNull('date_placed')
+                        ->exists())
                 ->schema([
                     Select::make('recipient_id')
                         ->label('Recipient assignment')
@@ -116,6 +151,68 @@ class ViewDocument extends ViewRecord
                     app(RecipientAssignmentService::class)->remove($actor, $recipient);
                     $this->record->refresh();
                     Notification::make()->title('Recipient assignment removed')->success()->send();
+                    $this->redirect(DocumentResource::getUrl('view', ['record' => $this->record]));
+                }),
+            Action::make('placeInReceivingBox')
+                ->label(RoutingAction::PlaceInReceivingBox->label())
+                ->icon('heroicon-o-inbox-arrow-down')
+                ->visible(fn (): bool => $actor->isLevelTwo()
+                    && in_array($this->record->current_status, [
+                        DocumentStatus::ForDistribution,
+                        DocumentStatus::ReadyForPickup,
+                    ], true)
+                    && $this->record->recipients()
+                        ->where('recipient_status', RecipientStatus::Assigned->value)
+                        ->whereNull('receiving_box_id')
+                        ->whereNull('date_placed')
+                        ->whereHas('recipientUnit', fn ($query) => $query
+                            ->where('status', OperationalStatus::Active->value))
+                        ->whereHas('recipientUnit.receivingBox', fn ($query) => $query
+                            ->where('status', OperationalStatus::Active->value))
+                        ->exists())
+                ->schema([
+                    Select::make('recipient_id')
+                        ->label('Recipient assignment')
+                        ->options(fn (): array => $this->record->recipients()
+                            ->with(['recipientUnit.receivingBox'])
+                            ->where('recipient_status', RecipientStatus::Assigned->value)
+                            ->whereNull('receiving_box_id')
+                            ->whereNull('date_placed')
+                            ->whereHas('recipientUnit', fn ($query) => $query
+                                ->where('status', OperationalStatus::Active->value))
+                            ->whereHas('recipientUnit.receivingBox', fn ($query) => $query
+                                ->where('status', OperationalStatus::Active->value))
+                            ->get()
+                            ->mapWithKeys(fn (DocumentRecipient $recipient): array => [
+                                $recipient->getKey() => sprintf(
+                                    '%s — %s',
+                                    $recipient->recipientUnit->unit_name,
+                                    $recipient->recipientUnit->receivingBox->box_location ?: 'Location not recorded',
+                                ),
+                            ])
+                            ->all())
+                        ->searchable()
+                        ->required(),
+                    Textarea::make('remarks')->rows(2),
+                ])
+                ->action(function (array $data) use ($actor): void {
+                    $recipient = $this->record->recipients()
+                        ->with('recipientUnit.receivingBox')
+                        ->findOrFail($data['recipient_id']);
+                    $box = $recipient->recipientUnit->receivingBox;
+
+                    app(DocumentRoutingService::class)->placeInReceivingBox(
+                        $actor,
+                        $recipient,
+                        $box,
+                        $data['remarks'] ?? null,
+                        [
+                            'ip_address' => request()->ip(),
+                            'device_info' => request()->userAgent(),
+                        ],
+                    );
+                    $this->record->refresh();
+                    Notification::make()->title('Document placed in receiving box')->success()->send();
                     $this->redirect(DocumentResource::getUrl('view', ['record' => $this->record]));
                 }),
             Action::make('cancelDocument')

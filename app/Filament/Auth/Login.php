@@ -2,6 +2,8 @@
 
 namespace App\Filament\Auth;
 
+use App\Models\User;
+use App\Services\AuditLogger;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Forms\Components\TextInput;
@@ -16,9 +18,17 @@ class Login extends BaseLogin
         $response = parent::authenticate();
 
         if ($response && auth()->check()) {
-            auth()->user()->forceFill([
+            /** @var User $user */
+            $user = auth()->user();
+            $user->forceFill([
                 'last_login_at' => now(),
             ])->save();
+
+            app(AuditLogger::class)->record(
+                'authentication.login_succeeded',
+                $user,
+                actor: $user,
+            );
         }
 
         return $response;

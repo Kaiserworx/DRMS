@@ -4,7 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\EditProfile;
 use App\Filament\Auth\Login;
-use App\Filament\Widgets\PhaseOneOverview;
+use App\Filament\Widgets\OperationalOverview;
 use App\Models\DeploymentSetting;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -32,6 +32,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(Login::class)
             ->profile(EditProfile::class)
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->brandName(fn (): string => DeploymentSetting::current()?->system_name ?? config('app.name'))
             ->databaseTransactions()
             ->colors([
@@ -45,7 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                PhaseOneOverview::class,
+                OperationalOverview::class,
             ])
             ->middleware([
                 EncryptCookies::class,

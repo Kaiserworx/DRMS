@@ -21,6 +21,7 @@ return new class extends Migration
                 'mark_for_distribution',
                 'assign_recipient_unit',
                 'place_in_receiving_box',
+                'claim_by_recipient_unit',
                 'cancel',
             ]);
             $table->enum('previous_status', [
@@ -66,6 +67,8 @@ return new class extends Migration
             $table->foreignId('performed_by')->constrained('users')->restrictOnDelete();
             $table->dateTime('transaction_date');
             $table->text('remarks')->nullable();
+            $table->string('receiver_name')->nullable();
+            $table->string('receiver_position')->nullable();
             $table->ipAddress('ip_address')->nullable();
             $table->text('device_info')->nullable();
             $table->timestamps();

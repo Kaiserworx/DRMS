@@ -193,7 +193,7 @@ class RoutingEngineTest extends TestCase
         $transaction->save();
     }
 
-    public function test_phase_six_placement_action_is_prepared_but_rejected(): void
+    public function test_generic_routing_action_rejects_placement_without_recipient_context(): void
     {
         $actor = User::factory()->levelTwo()->create();
         $document = Document::factory()->create([
