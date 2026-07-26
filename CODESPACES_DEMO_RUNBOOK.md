@@ -15,6 +15,19 @@ Use only fabricated users and records. Never copy the local development database
 - Public forwarding for Laravel port 8000 only.
 - Debug and real email delivery disabled.
 
+## Current Demonstration Deployment
+
+Verified on 2026-07-26:
+
+- Codespace: `refactored-waffle-r4g46jjxqx55359w`
+- Branch: `codex/complete-phases-6-12`
+- Revision: `fb4359c`
+- Machine: 2 cores, 8 GB RAM, 32 GB storage
+- Public login: `https://refactored-waffle-r4g46jjxqx55359w-8000.app.github.dev/admin/login`
+- Public exposure: Laravel port 8000 only
+
+The URL is temporary. It stops responding when the Codespace stops and becomes obsolete when the Codespace is deleted.
+
 ## Required Codespaces Secrets
 
 Configure these repository Codespaces secrets before creating the Codespace:
@@ -34,6 +47,8 @@ Never place their values in source control, container configuration, screenshots
 5. Change port 8000 visibility from private to public.
 6. Run `.devcontainer/smoke-demo.sh`.
 7. Open the public HTTPS URL and verify the DRMS login page.
+
+If GitHub attaches before it retains the first lifecycle-started background processes, run `.devcontainer/start-demo.sh` once in the Codespace terminal and rerun the smoke check. Revision `fb4359c` detaches the lifecycle start command with `setsid` for subsequent rebuilt environments.
 
 The seeded fabricated accounts are:
 

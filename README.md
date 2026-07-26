@@ -81,6 +81,10 @@ The repository contains a reproducible Codespaces profile for scheduled, operato
 - Debug and real email delivery disabled.
 - Public forwarding for Laravel port 8000 only.
 
+The current temporary demonstration login is
+`https://refactored-waffle-r4g46jjxqx55359w-8000.app.github.dev/admin/login`.
+It is available only while the operator keeps the Codespace running and port 8000 public.
+
 Follow [CODESPACES_DEMO_RUNBOOK.md](CODESPACES_DEMO_RUNBOOK.md). Use only fabricated records and stop the Codespace after the demonstration to control access and compute usage.
 
 ## Notification Delivery

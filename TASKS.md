@@ -424,18 +424,20 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 
 #### Temporary Codespaces Demo Deployment
 
-**Status:** In Progress
+**Status:** Completed
 
 - [x] Confirm the repository is privately owned by the authenticated personal GitHub account with administrator access.
 - [x] Confirm a 2-core Codespaces machine is available and no pilot/production deployment is authorized.
 - [x] Define the synthetic demo boundary separately from the blocked Phase 12 pilot release.
-- [ ] Add and validate the PHP 8.4, Node.js 24, and private MySQL 8.4 dev-container profile.
-- [ ] Provision the required repository Codespaces secrets without exposing their values.
-- [ ] Commit and push the reviewed demo configuration.
-- [ ] Create the Codespace from the approved branch.
-- [ ] Verify clean migrations/seeding, tests, formatter, audits, frontend build, queue worker, and smoke checks.
-- [ ] Make only port 8000 public and verify the HTTPS login endpoint.
-- [ ] Record the Codespace, revision, URL, validation evidence, limitations, and stop procedure.
+- [x] Add and validate the PHP 8.4, Node.js 24, and private MySQL 8.4 dev-container profile.
+- [x] Provision the required repository Codespaces secrets without exposing their values.
+- [x] Commit and push the reviewed demo configuration.
+- [x] Create the Codespace from the approved branch.
+- [x] Verify clean migrations/seeding, tests, formatter, audits, frontend build, queue worker, and smoke checks.
+- [x] Make only port 8000 public and verify the HTTPS login endpoint.
+- [x] Record the Codespace, revision, URL, validation evidence, limitations, and stop procedure.
+
+**Deployment evidence (2026-07-26):** Codespace `refactored-waffle-r4g46jjxqx55359w` runs the `codex/complete-phases-6-12` branch on a 2-core, 8 GB RAM, 32 GB machine at revision `fb4359c`. The public application endpoint is `https://refactored-waffle-r4g46jjxqx55359w-8000.app.github.dev/admin/login`. Repository Codespaces secrets `DRMS_DEMO_PASSWORD`, `DRMS_DB_PASSWORD`, and `DRMS_DB_ROOT_PASSWORD` were confirmed without exposing their values. The creation workflow completed locked dependency installation, the Vite build, clean MySQL migration/seeding, 129 automated tests with 633 assertions, Pint, Composer audit, npm audit, and optimization. The hosted smoke check verified PHP 8.4, Node.js 24, MySQL 8.4, applied migrations, healthy `notifications` and `default` database queues, and the local login route. Browser validation then confirmed port 8000 as the only forwarded public port, an active Laravel process, and the public DRMS sign-in page. Revision `fb4359c` detaches the lifecycle start command for more reliable restarts; the current session was started manually before that hardening was pulled and remains healthy.
 
 **Boundary:** This is a temporary, operator-attended environment containing fabricated data only. It does not satisfy the official pilot assets, named contacts, final-domain QR, or acceptance-signature requirements and must not change the `NOT READY FOR PILOT RELEASE` recommendation.
 
@@ -457,6 +459,7 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 | GitHub baseline backup | Completed | Baseline commit `d13f9178c4010ea171bf49c28a34ea15b024d92a` verified on `Kaiserworx/DRMS` `main` |
 | Security review | Completed | Automated review, audits, backup/restore rehearsal, Activity Audit review, and QR workflow evidence pass |
 | UAT | Blocked | All 17 technical scenarios pass; official pilot assets, named contacts, and acceptance signatures remain outstanding |
+| Temporary Codespaces demo | Completed | 2-core Codespace `refactored-waffle-r4g46jjxqx55359w` at revision `fb4359c`; hosted smoke check and public HTTPS login passed with only port 8000 exposed |
 
 ## 6. Current Recommendation
 
