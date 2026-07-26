@@ -441,6 +441,19 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 
 **Boundary:** This is a temporary, operator-attended environment containing fabricated data only. It does not satisfy the official pilot assets, named contacts, final-domain QR, or acceptance-signature requirements and must not change the `NOT READY FOR PILOT RELEASE` recommendation.
 
+#### Codespaces HTTPS Asset Correction
+
+**Status:** In Progress
+
+- [x] Reproduce the unstyled public login page and identify the failed asset-origin behavior.
+- [x] Generate Filament assets from the configured HTTPS application origin when Laravel is behind the Codespaces HTTP proxy.
+- [x] Add regression coverage for public HTTPS Filament CSS and JavaScript URLs.
+- [x] Run the focused regression test, complete automated suite, formatter check, and frontend production build.
+- [ ] Deploy the correction to the active Codespace.
+- [ ] Verify the styled public login page and absence of browser console errors.
+
+**Current evidence:** The hosted login HTML generated absolute Filament asset links from the proxy's internal HTTP origin, which caused the public HTTPS page to render without styles or JavaScript. The correction uses the configured HTTPS `APP_URL` as Laravel's URL-generation origin. The focused regression test passes 1 test with 3 assertions; the complete suite passes 130 tests with 636 assertions; Pint and the Vite production build pass. Live deployment and visual validation remain pending.
+
 ## 5. Validation Status
 
 | Area | Status | Evidence |
