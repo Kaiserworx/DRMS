@@ -449,10 +449,10 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 - [x] Generate Filament assets from the configured HTTPS application origin when Laravel is behind the Codespaces HTTP proxy.
 - [x] Add regression coverage for public HTTPS Filament CSS and JavaScript URLs.
 - [x] Run the focused regression test, complete automated suite, formatter check, and frontend production build.
-- [ ] Deploy the correction to the active Codespace.
+- [x] Deploy the correction to the active Codespace.
 - [ ] Verify the styled public login page and absence of browser console errors.
 
-**Current evidence:** The hosted login HTML generated absolute Filament asset links from the proxy's internal HTTP origin, which caused the public HTTPS page to render without styles or JavaScript. The correction uses the configured HTTPS `APP_URL` as Laravel's URL-generation origin. The focused regression test passes 1 test with 3 assertions; the complete suite passes 130 tests with 636 assertions; Pint and the Vite production build pass. Live deployment and visual validation remain pending.
+**Current evidence:** The hosted login HTML generated absolute Filament asset links from the proxy's internal HTTP origin, which caused the public HTTPS page to render without styles or JavaScript. The correction uses the configured HTTPS `APP_URL` as Laravel's URL-generation origin. The focused regression test passes 1 test with 3 assertions; the complete suite passes 130 tests with 636 assertions; Pint and the Vite production build pass. Revision `d01da8e` is deployed to the active Codespace, optimized caches were rebuilt, and the hosted login HTML now references HTTPS CSS and JavaScript assets on the public Codespaces hostname. Browser visual validation remains pending because the controlled browser cannot inspect the `app.github.dev` forwarded-port domain; the operator must reload the public page and confirm the rendered interface and browser console.
 
 ## 5. Validation Status
 

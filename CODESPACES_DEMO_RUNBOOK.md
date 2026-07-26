@@ -21,7 +21,7 @@ Verified on 2026-07-26:
 
 - Codespace: `refactored-waffle-r4g46jjxqx55359w`
 - Branch: `codex/complete-phases-6-12`
-- Revision: `fb4359c`
+- Application revision: `d01da8e`
 - Machine: 2 cores, 8 GB RAM, 32 GB storage
 - Public login: `https://refactored-waffle-r4g46jjxqx55359w-8000.app.github.dev/admin/login`
 - Public exposure: Laravel port 8000 only
@@ -46,7 +46,7 @@ Never place their values in source control, container configuration, screenshots
 4. Confirm `start-demo.sh` starts the Laravel server and queue worker.
 5. Change port 8000 visibility from private to public.
 6. Run `.devcontainer/smoke-demo.sh`.
-7. Open the public HTTPS URL and verify the DRMS login page.
+7. Open the public HTTPS URL and verify the styled DRMS login page.
 
 If GitHub attaches before it retains the first lifecycle-started background processes, run `.devcontainer/start-demo.sh` once in the Codespace terminal and rerun the smoke check. Revision `fb4359c` detaches the lifecycle start command with `setsid` for subsequent rebuilt environments.
 
@@ -56,6 +56,8 @@ The seeded fabricated accounts are:
 - Level 1 username: `encoder`
 
 Both use the temporary `DRMS_DEMO_PASSWORD` secret.
+
+If the login page renders as unstyled HTML, confirm the Codespace is running application revision `d01da8e` or later, run `php artisan optimize`, and reload the public page without using a cached response. The rendered login HTML must reference CSS and JavaScript on the public `https://<codespace>-8000.app.github.dev` origin, never the internal `http://127.0.0.1:8000` origin.
 
 ## Before Every Demonstration
 
