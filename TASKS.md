@@ -5,6 +5,19 @@
 **Last updated:** 2026-08-01
 **Current product phase:** Phase 12 — Blocked
 **Implementation status:** Phase 12 technical UAT complete; pilot release is not ready pending official pilot assets, named contacts, and acceptance sign-off
+
+### Vercel Preview Deployment
+
+**Status:** In Progress
+
+- [x] Receive explicit authorization for a GitHub-linked Vercel preview deployment.
+- [ ] Create and push the `codex/vercel-deployment` branch.
+- [ ] Add the minimal PHP 8.4 serverless entry point, asset handler, Vercel configuration, and deployment exclusions.
+- [ ] Validate the deployment configuration, frontend build, and application regression suite.
+- [ ] Configure Vercel secrets and an external TLS-protected MySQL 8.4 database.
+- [ ] Deploy and complete HTTPS, login, authorization, asset, database, queue, and QR smoke checks.
+
+The preview remains separate from pilot/production approval. The Phase 12 release recommendation stays `NOT READY FOR PILOT RELEASE` until its existing acceptance blockers are resolved.
 **Requirements:** `PRD.md`  
 **Approved sequence:** `PLAN.md`
 

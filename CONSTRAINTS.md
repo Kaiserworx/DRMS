@@ -63,3 +63,11 @@
 - Keep machine-specific XAMPP and VS Code runtime files local and excluded from source control.
 - Production hosting, public demo hosting, domain, infrastructure sizing, email delivery, queue topology, backup storage, and deployment credentials remain undecided.
 - Do not deploy publicly or provision remote infrastructure without separate approval.
+
+### Approved Vercel Preview Exception
+
+- On 2026-08-01, the user separately approved creating and publicly deploying the `codex/vercel-deployment` branch to their GitHub-linked Vercel account as a preview/demo environment.
+- This exception does not approve pilot or production release, does not change the blocked Phase 12 acceptance decision, and permits fabricated demonstration data only.
+- The Vercel preview must use PHP 8.4, an external TLS-protected MySQL 8.4 database, database-backed sessions/cache/queues, and production-safe application settings.
+- A persistent queue worker cannot run inside a Vercel Function and must be hosted and monitored separately before queued notifications can be considered operational.
+- Development documentation, tests, local runtime files, secrets, dependencies, and generated local state must be excluded from the Vercel deployment bundle.
