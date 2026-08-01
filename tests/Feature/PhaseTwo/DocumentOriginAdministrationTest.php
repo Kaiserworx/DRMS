@@ -4,6 +4,7 @@ namespace Tests\Feature\PhaseTwo;
 
 use App\Enums\OperationalStatus;
 use App\Enums\OriginType;
+use App\Filament\Resources\DocumentOrigins\DocumentOriginResource;
 use App\Filament\Resources\DocumentOrigins\Pages\CreateDocumentOrigin;
 use App\Models\DeploymentSetting;
 use App\Models\DocumentOrigin;
@@ -39,7 +40,8 @@ class DocumentOriginAdministrationTest extends TestCase
             ])
             ->call('create')
             ->assertHasNoFormErrors()
-            ->assertNotified();
+            ->assertNotified()
+            ->assertRedirect(DocumentOriginResource::getUrl('index'));
 
         $this->assertDatabaseHas('document_origins', [
             'origin_type' => OriginType::UpstreamOffice->value,

@@ -138,4 +138,36 @@ class ListingAndNotificationRegressionTest extends TestCase
 
         $this->assertDatabaseMissing('notifications', ['id' => $notification->id]);
     }
+
+    public function test_active_level_one_account_created_after_assignment_is_notified_when_level_two_places_the_record(): void
+    {
+        config()->set('queue.default', 'sync');
+        $unit = OrganizationalUnit::factory()->create();
+        $levelTwo = User::factory()->levelTwo()->create();
+        $box = ReceivingBox::factory()->create(['organizational_unit_id' => $unit->id]);
+        $document = Document::factory()->create([
+            'current_status' => DocumentStatus::ForDistribution,
+            'current_location' => PhysicalLocation::ManagingOffice,
+        ]);
+
+        $recipient = app(DocumentRoutingService::class)
+            ->assignRecipients($levelTwo, $document, [$unit->id])
+            ->sole();
+
+        $newAccount = User::factory()->levelOne($unit)->create();
+
+        app(DocumentRoutingService::class)->placeInReceivingBox(
+            $levelTwo,
+            $recipient,
+            $box,
+        );
+
+        $notification = $newAccount->notifications()->sole();
+
+        $this->assertSame('placement', $notification->data['event_type']);
+        $this->assertSame($document->tracking_no, $notification->data['tracking_number']);
+        $this->assertSame($document->documentType->name, $notification->data['document_type']);
+        $this->assertSame($document->subject, $notification->data['subject']);
+        $this->assertSame("/admin/documents/{$document->getKey()}", $notification->data['url']);
+    }
 }

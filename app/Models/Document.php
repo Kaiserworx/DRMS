@@ -90,17 +90,17 @@ class Document extends Model
 
     public function submittingUnit(): BelongsTo
     {
-        return $this->belongsTo(OrganizationalUnit::class, 'submitting_unit_id');
+        return $this->belongsTo(OrganizationalUnit::class, 'submitting_unit_id')->withTrashed();
     }
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by')->withTrashed();
     }
 
     public function canceller(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'cancelled_by');
+        return $this->belongsTo(User::class, 'cancelled_by')->withTrashed();
     }
 
     public function recipients(): HasMany

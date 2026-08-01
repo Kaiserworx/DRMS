@@ -34,6 +34,8 @@ class AdminPanelProvider extends PanelProvider
             ->profile(EditProfile::class)
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
             ->brandName(fn (): string => DeploymentSetting::current()?->system_name ?? config('app.name'))
             ->databaseTransactions()
             ->colors([

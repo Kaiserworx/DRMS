@@ -36,11 +36,14 @@ The governing files are `AGENTS.md`, `CONSTRAINTS.md`, `PRD.md`, `PLAN.md`, and 
 
 ## Local Prerequisites
 
-- Open a new terminal after installation so the machine `PATH` resolves PHP 8.4 before the preserved XAMPP PHP installation.
+- Open the project in VS Code and use its local DRMS tasks to run the application.
+- XAMPP 8.2.12 supplies Apache 2.4.58 only. Its bundled PHP 8.2 and MariaDB 10.4 are not used by DRMS.
+- The machine `PATH` must resolve the approved PHP 8.4 runtime before the preserved XAMPP PHP installation.
 - Verify `php --version`, `composer --version`, `node --version`, and `npm --version` before setup.
 - The dedicated MySQL Windows service is `DRMSMySQL84`. It listens only on `127.0.0.1:3307`.
 - The local development database is `drms`; the clean migration-test database is `drms_test`.
 - Application and root database passwords are local secrets. They must never be placed in tracked files.
+- Machine-specific XAMPP Apache and VS Code task files live under ignored `.local` and `.vscode` directories.
 
 ## Installation
 
@@ -58,10 +61,11 @@ Set `DB_PASSWORD` in `.env` to the password provisioned for the restricted local
 npm install
 php artisan migrate --seed
 npm run build
-php artisan serve
 ```
 
-Open `http://127.0.0.1:8000/admin`.
+In VS Code, run the **DRMS: Start Local XAMPP Workspace** task. It starts a dedicated XAMPP Apache instance on `127.0.0.1:8081`, the notification queue worker, and the Vite development server. Open `http://127.0.0.1:8081/admin`.
+
+Do not start XAMPP MySQL for DRMS. The application remains connected to the dedicated Oracle MySQL 8.4 service on port 3307.
 
 The normal seed creates the default deployment settings, one example organizational unit, and the 11 required example document types. To create local demonstration users, set a strong, non-production `DRMS_DEMO_PASSWORD` in the untracked `.env` before running the seed. This optionally creates:
 

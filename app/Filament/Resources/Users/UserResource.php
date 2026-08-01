@@ -11,6 +11,7 @@ use App\Models\DeploymentSetting;
 use App\Models\OrganizationalUnit;
 use App\Models\User;
 use BackedEnum;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -154,6 +155,7 @@ class UserResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 

@@ -75,12 +75,12 @@ class DocumentRecipient extends Model
 
     public function recipientUnit(): BelongsTo
     {
-        return $this->belongsTo(OrganizationalUnit::class, 'recipient_unit_id');
+        return $this->belongsTo(OrganizationalUnit::class, 'recipient_unit_id')->withTrashed();
     }
 
     public function claimedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'claimed_by_user_id');
+        return $this->belongsTo(User::class, 'claimed_by_user_id')->withTrashed();
     }
 
     public function receivingBox(): BelongsTo

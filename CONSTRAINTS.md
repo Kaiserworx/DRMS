@@ -57,7 +57,9 @@
 
 ## 6. Hosting and Deployment Boundaries
 
-- Phase 0 covers local development setup only.
-- Production hosting, domain, infrastructure sizing, email delivery, queue topology, backup storage, and deployment credentials remain undecided.
-- Do not deploy publicly or provision production infrastructure without separate approval.
-
+- Run the current project only on the approved local Windows development machine through VS Code and XAMPP Apache.
+- Use XAMPP only as the local Apache web server. The installed XAMPP PHP 8.2 and MariaDB 10.4 runtimes are not approved for DRMS.
+- Continue to use the verified PHP 8.4 runtime and the dedicated Oracle MySQL 8.4 `DRMSMySQL84` Windows service.
+- Keep machine-specific XAMPP and VS Code runtime files local and excluded from source control.
+- Production hosting, public demo hosting, domain, infrastructure sizing, email delivery, queue topology, backup storage, and deployment credentials remain undecided.
+- Do not deploy publicly or provision remote infrastructure without separate approval.

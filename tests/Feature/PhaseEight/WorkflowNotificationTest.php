@@ -32,6 +32,8 @@ class WorkflowNotificationTest extends TestCase
         $otherUnit = OrganizationalUnit::factory()->create();
         $recipientUser = User::factory()->levelOne($unit)->create();
         $inactiveUser = User::factory()->levelOne($unit)->inactive()->create();
+        $deletedUser = User::factory()->levelOne($unit)->create();
+        $deletedUser->delete();
         $otherUser = User::factory()->levelOne($otherUnit)->create();
         $levelTwo = User::factory()->levelTwo()->create();
         $document = Document::factory()->create([
@@ -47,6 +49,7 @@ class WorkflowNotificationTest extends TestCase
 
         $this->assertCount(0, $recipientUser->notifications);
         $this->assertCount(0, $inactiveUser->notifications);
+        $this->assertCount(0, $deletedUser->notifications);
         $this->assertCount(0, $otherUser->notifications);
         $this->assertCount(0, $levelTwo->notifications);
         $this->assertDatabaseCount('notification_dispatches', 0);
@@ -56,6 +59,8 @@ class WorkflowNotificationTest extends TestCase
     {
         $unit = OrganizationalUnit::factory()->create();
         $recipientUser = User::factory()->levelOne($unit)->create();
+        $deletedUser = User::factory()->levelOne($unit)->create();
+        $deletedUser->delete();
         $levelTwo = User::factory()->levelTwo()->create();
         $box = ReceivingBox::factory()->create(['organizational_unit_id' => $unit->id]);
         $document = Document::factory()->create([
@@ -76,11 +81,16 @@ class WorkflowNotificationTest extends TestCase
         app(DocumentNotificationDispatcher::class)->dispatchForTransaction($transaction);
 
         $this->assertCount(1, $recipientUser->notifications);
+        $this->assertCount(0, $deletedUser->notifications);
         $this->assertDatabaseCount('notification_dispatches', 1);
         $this->assertSame(
             DocumentNotificationType::Placement->value,
             $recipientUser->notifications->sole()->data['event_type'],
         );
+        $this->assertSame($document->documentType->name, $recipientUser->notifications->sole()->data['document_type']);
+        $this->assertSame($document->subject, $recipientUser->notifications->sole()->data['subject']);
+        $this->assertStringContainsString($document->documentType->name, $recipientUser->notifications->sole()->data['body']);
+        $this->assertStringContainsString($document->subject, $recipientUser->notifications->sole()->data['body']);
     }
 
     public function test_status_and_upstream_events_do_not_notify_level_one_users(): void
@@ -192,7 +202,9 @@ class WorkflowNotificationTest extends TestCase
             fn (DocumentWorkflowNotification $notification, array $channels): bool => $channels === ['database', 'mail']
                 && $notification->eventType === DocumentNotificationType::Placement
                 && $notification->trackingNumber === $document->tracking_no
-                && str_starts_with($notification->safeUrl, config('app.url')),
+                && $notification->documentType === $document->documentType->name
+                && $notification->subject === $document->subject
+                && $notification->safeUrl === "/admin/documents/{$document->getKey()}",
         );
     }
 }

@@ -46,7 +46,7 @@ class DocumentTransaction extends Model
 
     public function performer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'performed_by');
+        return $this->belongsTo(User::class, 'performed_by')->withTrashed();
     }
 
     protected function casts(): array

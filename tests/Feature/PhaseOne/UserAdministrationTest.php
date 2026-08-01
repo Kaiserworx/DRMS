@@ -7,10 +7,14 @@ use App\Enums\UserRole;
 use App\Filament\Auth\EditProfile;
 use App\Filament\Pages\ManageDeploymentSettings;
 use App\Filament\Resources\Users\Pages\CreateUser;
+use App\Filament\Resources\Users\Pages\EditUser;
+use App\Filament\Resources\Users\UserResource;
 use App\Filament\Widgets\OperationalOverview;
 use App\Models\DeploymentSetting;
+use App\Models\Document;
 use App\Models\OrganizationalUnit;
 use App\Models\User;
+use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -80,7 +84,8 @@ class UserAdministrationTest extends TestCase
             ])
             ->call('create')
             ->assertHasNoFormErrors()
-            ->assertNotified();
+            ->assertNotified()
+            ->assertRedirect(UserResource::getUrl('index'));
 
         $this->assertDatabaseHas('users', [
             'email' => 'new.encoder@example.test',
@@ -128,6 +133,42 @@ class UserAdministrationTest extends TestCase
                 'email' => 'unique',
                 'username' => 'unique',
             ]);
+    }
+
+    public function test_level_two_can_delete_a_level_one_account_without_erasing_history(): void
+    {
+        $unit = OrganizationalUnit::factory()->create();
+        $levelOne = User::factory()->levelOne($unit)->create();
+        $document = Document::factory()->create([
+            'created_by' => $levelOne->id,
+            'submitting_unit_id' => $unit->id,
+        ]);
+        $this->actingAs($this->administrator);
+
+        Livewire::test(EditUser::class, ['record' => $levelOne->getRouteKey()])
+            ->callAction(DeleteAction::class)
+            ->assertNotified()
+            ->assertRedirect(UserResource::getUrl('index'));
+
+        $this->assertSoftDeleted($levelOne);
+        $this->assertNull(User::query()->find($levelOne->id));
+        $this->assertTrue($document->fresh()->creator->is($levelOne));
+        $this->assertDatabaseHas('audit_events', [
+            'event_type' => 'user.deleted',
+            'actor_id' => $this->administrator->id,
+            'auditable_type' => $levelOne->getMorphClass(),
+            'auditable_id' => $levelOne->id,
+        ]);
+    }
+
+    public function test_no_user_can_delete_a_level_two_account(): void
+    {
+        $otherAdministrator = User::factory()->levelTwo()->create();
+        $levelOne = User::factory()->levelOne(OrganizationalUnit::factory()->create())->create();
+
+        $this->assertFalse($this->administrator->can('delete', $otherAdministrator));
+        $this->assertFalse($levelOne->can('delete', $otherAdministrator));
+        $this->assertFalse($levelOne->can('delete', $levelOne));
     }
 
     public function test_profile_editing_cannot_change_role_or_unit(): void

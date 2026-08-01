@@ -5,6 +5,7 @@ namespace Tests\Feature\PhaseSix;
 use App\Enums\OperationalStatus;
 use App\Enums\ReceivingBoxTokenAction;
 use App\Filament\Resources\ReceivingBoxes\Pages\CreateReceivingBox;
+use App\Filament\Resources\ReceivingBoxes\ReceivingBoxResource;
 use App\Models\DeploymentSetting;
 use App\Models\OrganizationalUnit;
 use App\Models\ReceivingBox;
@@ -67,7 +68,8 @@ class ReceivingBoxAdministrationTest extends TestCase
             ])
             ->call('create')
             ->assertHasNoFormErrors()
-            ->assertNotified();
+            ->assertNotified()
+            ->assertRedirect(ReceivingBoxResource::getUrl('index'));
 
         $box = ReceivingBox::query()->where('organizational_unit_id', $unit->id)->firstOrFail();
         $this->assertSame('Records lobby, shelf A', $box->box_location);

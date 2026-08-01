@@ -3,6 +3,7 @@
 namespace Tests\Feature\PhaseTwo;
 
 use App\Enums\OperationalStatus;
+use App\Filament\Resources\DocumentTypes\DocumentTypeResource;
 use App\Filament\Resources\DocumentTypes\Pages\CreateDocumentType;
 use App\Filament\Resources\DocumentTypes\Pages\EditDocumentType;
 use App\Models\DeploymentSetting;
@@ -38,7 +39,8 @@ class DocumentTypeAdministrationTest extends TestCase
             ])
             ->call('create')
             ->assertHasNoFormErrors()
-            ->assertNotified();
+            ->assertNotified()
+            ->assertRedirect(DocumentTypeResource::getUrl('index'));
 
         $documentType = DocumentType::query()
             ->where('normalized_name', 'board resolution')
@@ -53,7 +55,8 @@ class DocumentTypeAdministrationTest extends TestCase
             ])
             ->call('save')
             ->assertHasNoFormErrors()
-            ->assertNotified();
+            ->assertNotified()
+            ->assertRedirect(DocumentTypeResource::getUrl('index'));
 
         $this->assertSame(
             OperationalStatus::Inactive,

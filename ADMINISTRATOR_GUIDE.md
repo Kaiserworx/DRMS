@@ -15,7 +15,10 @@ This guide covers application administration. Server, database, DNS, TLS, backup
 - Give Level 1 users one approved active organizational unit.
 - Reserve Level 2 for records administrators who require managing-office-wide control.
 - Use strong passwords and deactivate access promptly when no longer authorized.
-- Never delete users or transaction history to conceal past activity.
+- Level 2 may delete a Level 1 account. The account is removed from access and normal administration lists, while its historical document, custody, claim, token-audit, and activity-audit references remain intact.
+- Level 2 accounts cannot be deleted through DRMS.
+- Delete an organizational unit only when DRMS offers the action. Units with child units, users, documents, recipient assignments, or receiving boxes remain protected from deletion.
+- Never delete an account, unit, or transaction history to conceal past activity.
 - Verify authorization on the server by testing direct access, not only by checking whether a menu item is hidden.
 
 ## 3. Configuration and Reference Data
@@ -45,7 +48,7 @@ This guide covers application administration. Server, database, DNS, TLS, backup
 
 ## 6. Queues, Scheduler, and Notifications
 
-Run a monitored database queue worker and the scheduler. Restart queue workers after deployment. Level 1 notifications are queued only when Level 2 places a recipient record in its receiving box and makes it ready for pickup. Email stays off until delivery is approved and tested.
+Run a monitored database queue worker and the scheduler. Restart queue workers after deployment. Level 1 notifications are queued only when Level 2 places a recipient record in its receiving box and makes it ready for pickup. Each notification shows the tracking number, document type, and subject. Email stays off until delivery is approved and tested.
 
 Review failed jobs, correct the root cause, and retry only after confirming that idempotency protections prevent duplicate notifications.
 

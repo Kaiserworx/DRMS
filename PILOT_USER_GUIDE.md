@@ -45,7 +45,7 @@ Level 2 users manage configuration, units, users, reference data, documents, rec
 
 ## 4. Notifications and Reports
 
-Database notifications appear in the top bar when Level 2 places a document in the Level 1 user's receiving box and makes it ready for pickup. Opening or marking a notification as read keeps it in the list; only the owning user may explicitly delete it. Reports and CSV exports use the same authorization scope as the screen. CSV files may contain operationally sensitive data; store and share them only through approved channels.
+Database notifications appear in the top bar when Level 2 places a document in the Level 1 user's receiving box and makes it ready for pickup. Each notification shows the tracking number, document type, and subject. Opening or marking a notification as read keeps it in the list; only the owning user may explicitly delete it. Reports and CSV exports use the same authorization scope as the screen. CSV files may contain operationally sensitive data; store and share them only through approved channels.
 
 ## 5. Report an Issue
 

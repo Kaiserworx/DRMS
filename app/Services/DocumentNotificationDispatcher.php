@@ -20,7 +20,7 @@ class DocumentNotificationDispatcher
     public function dispatchForTransaction(DocumentTransaction $transaction): int
     {
         try {
-            $transaction->loadMissing(['document', 'recipient']);
+            $transaction->loadMissing(['document.documentType', 'recipient']);
 
             if ($transaction->action !== RoutingAction::PlaceInReceivingBox || $transaction->recipient === null) {
                 return 0;
@@ -31,7 +31,14 @@ class DocumentNotificationDispatcher
                 type: DocumentNotificationType::Placement,
                 eventKey: "transaction:{$transaction->getKey()}:".DocumentNotificationType::Placement->value,
                 unitIds: [$transaction->recipient->recipient_unit_id],
-                message: "{$transaction->document->tracking_no} is ready in your receiving box.",
+                documentType: $transaction->document->documentType->name,
+                subject: $transaction->document->subject,
+                message: sprintf(
+                    '%s - %s: %s',
+                    $transaction->document->tracking_no,
+                    $transaction->document->documentType->name,
+                    $transaction->document->subject,
+                ),
             );
         } catch (Throwable $exception) {
             $this->reportFailure('transaction', (string) $transaction->getKey(), $exception);
@@ -48,6 +55,8 @@ class DocumentNotificationDispatcher
         DocumentNotificationType $type,
         string $eventKey,
         array $unitIds,
+        string $documentType,
+        string $subject,
         string $message,
     ): int {
         if ($unitIds === []) {
@@ -82,9 +91,11 @@ class DocumentNotificationDispatcher
                     documentId: $document->getKey(),
                     trackingNumber: $document->tracking_no,
                     eventType: $type,
+                    documentType: $documentType,
+                    subject: $subject,
                     title: 'Document ready for pickup',
                     message: $message,
-                    safeUrl: url("/admin/documents/{$document->getKey()}"),
+                    safeUrl: "/admin/documents/{$document->getKey()}",
                 ));
                 $queued++;
             } catch (Throwable $exception) {

@@ -53,7 +53,7 @@ class ReceivingBox extends Model
 
     public function organizationalUnit(): BelongsTo
     {
-        return $this->belongsTo(OrganizationalUnit::class);
+        return $this->belongsTo(OrganizationalUnit::class)->withTrashed();
     }
 
     public function recipients(): HasMany

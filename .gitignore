@@ -8,6 +8,7 @@
 .phpunit.result.cache
 /.fleet
 /.idea
+/.local
 /.nova
 /.phpunit.cache
 /.vscode
@@ -18,6 +19,7 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/framework/*.pid
 /storage/pail
 /vendor
 Homestead.json

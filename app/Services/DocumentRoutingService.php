@@ -198,7 +198,10 @@ class DocumentRoutingService
             }
 
             if ($lockedBox->status !== OperationalStatus::Active
-                || $lockedBox->organizationalUnit()->where('status', OperationalStatus::Active->value)->doesntExist()) {
+                || $lockedBox->organizationalUnit()
+                    ->whereNull('deleted_at')
+                    ->where('status', OperationalStatus::Active->value)
+                    ->doesntExist()) {
                 throw ValidationException::withMessages([
                     'receiving_box' => 'Documents may only be placed in an active box for an active unit.',
                 ]);

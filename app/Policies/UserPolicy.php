@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
 use App\Models\User;
 
 class UserPolicy
@@ -28,6 +29,7 @@ class UserPolicy
 
     public function delete(User $user, User $target): bool
     {
-        return false;
+        return $user->isLevelTwo()
+            && $target->role === UserRole::LevelOne;
     }
 }

@@ -6,6 +6,7 @@ use App\Enums\DocumentStatus;
 use App\Enums\PhysicalLocation;
 use App\Enums\RecipientStatus;
 use App\Enums\RoutingAction;
+use App\Filament\Widgets\OperationalOverview;
 use App\Models\Document;
 use App\Models\DocumentRecipient;
 use App\Models\DocumentTransaction;
@@ -14,10 +15,12 @@ use App\Models\ReceivingBox;
 use App\Models\User;
 use App\Services\DashboardMetricsService;
 use App\Services\OperationalReportService;
+use App\Services\ReceivingBoxQrCodeService;
 use App\Services\SpreadsheetSafeCsv;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class DashboardAndReportsTest extends TestCase
@@ -81,6 +84,45 @@ class DashboardAndReportsTest extends TestCase
         $this->assertSame(1, $metrics['claimed_today']);
         $this->assertSame(1, $metrics['completed']);
         $this->assertSame(1, $metrics['unread_notifications']);
+    }
+
+    public function test_level_one_dashboard_shows_only_the_users_active_receiving_box_qr_and_link(): void
+    {
+        $ownUnit = OrganizationalUnit::factory()->create();
+        $otherUnit = OrganizationalUnit::factory()->create();
+        $user = User::factory()->levelOne($ownUnit)->create();
+        $ownBox = ReceivingBox::factory()->create([
+            'organizational_unit_id' => $ownUnit->id,
+            'box_location' => 'South records counter',
+        ]);
+        $otherBox = ReceivingBox::factory()->create([
+            'organizational_unit_id' => $otherUnit->id,
+        ]);
+        $qrCode = app(ReceivingBoxQrCodeService::class);
+
+        Livewire::actingAs($user)
+            ->test(OperationalOverview::class)
+            ->assertSee('Your Receiving Box')
+            ->assertSee($ownUnit->unit_name)
+            ->assertSee('South records counter')
+            ->assertSee('Open Receiving Box')
+            ->assertSee($qrCode->inventoryUrl($ownBox), escape: false)
+            ->assertDontSee($qrCode->inventoryUrl($otherBox), escape: false);
+    }
+
+    public function test_level_one_dashboard_hides_inactive_and_missing_receiving_boxes(): void
+    {
+        $unit = OrganizationalUnit::factory()->create();
+        $user = User::factory()->levelOne($unit)->create();
+        $inactiveBox = ReceivingBox::factory()->inactive()->create([
+            'organizational_unit_id' => $unit->id,
+        ]);
+        $inactiveUrl = app(ReceivingBoxQrCodeService::class)->inventoryUrl($inactiveBox);
+
+        Livewire::actingAs($user)
+            ->test(OperationalOverview::class)
+            ->assertSee('No active receiving box is configured.')
+            ->assertDontSee($inactiveUrl, escape: false);
     }
 
     public function test_level_two_dashboard_and_box_summary_match_database_facts(): void

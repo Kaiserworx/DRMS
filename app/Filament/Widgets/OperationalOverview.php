@@ -2,11 +2,15 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\OperationalStatus;
 use App\Models\DeploymentSetting;
+use App\Models\ReceivingBox;
 use App\Models\User;
 use App\Services\DashboardMetricsService;
+use App\Services\ReceivingBoxQrCodeService;
 use Filament\Facades\Filament;
 use Filament\Widgets\Widget;
+use Illuminate\Support\Facades\Gate;
 
 class OperationalOverview extends Widget
 {
@@ -22,6 +26,7 @@ class OperationalOverview extends Widget
         /** @var User $user */
         $user = Filament::auth()->user();
         $service = app(DashboardMetricsService::class);
+        $levelOneReceivingBox = $this->levelOneReceivingBox($user);
 
         return [
             'user' => $user,
@@ -31,6 +36,40 @@ class OperationalOverview extends Widget
                 ? $this->levelTwoLabels()
                 : $this->levelOneLabels(),
             'boxSummary' => $service->receivingBoxSummary($user),
+            'levelOneReceivingBox' => $levelOneReceivingBox,
+        ];
+    }
+
+    /**
+     * @return array{location: string|null, url: string, svg: string}|null
+     */
+    private function levelOneReceivingBox(User $user): ?array
+    {
+        if ($user->isLevelTwo()) {
+            return null;
+        }
+
+        $unit = $user->organizationalUnit;
+
+        if ($unit === null || $unit->trashed() || $unit->status !== OperationalStatus::Active) {
+            return null;
+        }
+
+        $box = ReceivingBox::query()
+            ->active()
+            ->where('organizational_unit_id', $unit->id)
+            ->first();
+
+        if ($box === null || Gate::forUser($user)->denies('viewInventory', $box)) {
+            return null;
+        }
+
+        $qrCode = app(ReceivingBoxQrCodeService::class);
+
+        return [
+            'location' => $box->box_location,
+            'url' => $qrCode->inventoryUrl($box),
+            'svg' => $qrCode->svg($box, 224),
         ];
     }
 

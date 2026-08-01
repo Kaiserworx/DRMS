@@ -2,14 +2,19 @@
 
 namespace Tests\Feature\PhaseThree;
 
+use App\Enums\Priority;
+use App\Filament\Resources\Documents\DocumentResource;
+use App\Filament\Resources\Documents\Pages\CreateDocument;
 use App\Filament\Resources\Documents\Pages\ListDocuments;
 use App\Filament\Resources\Documents\Pages\ViewDocument;
 use App\Models\DeploymentSetting;
 use App\Models\Document;
+use App\Models\DocumentType;
 use App\Models\OrganizationalUnit;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class DocumentAuthorizationTest extends TestCase
@@ -49,5 +54,23 @@ class DocumentAuthorizationTest extends TestCase
         $this->actingAs($actor);
 
         $this->get(ViewDocument::getUrl(['record' => $document]))->assertOk();
+    }
+
+    public function test_level_two_returns_to_the_document_list_after_registration(): void
+    {
+        $actor = User::factory()->levelTwo()->create();
+        $type = DocumentType::factory()->create();
+        $this->actingAs($actor);
+
+        Livewire::test(CreateDocument::class)
+            ->fillForm([
+                'document_type_id' => $type->id,
+                'subject' => 'Redirect after registration',
+                'priority' => Priority::Normal->value,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors()
+            ->assertNotified()
+            ->assertRedirect(DocumentResource::getUrl('index'));
     }
 }

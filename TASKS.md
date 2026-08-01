@@ -2,7 +2,7 @@
 
 ## Execution Tracker
 
-**Last updated:** 2026-07-26
+**Last updated:** 2026-08-01
 **Current product phase:** Phase 12 — Blocked
 **Implementation status:** Phase 12 technical UAT complete; pilot release is not ready pending official pilot assets, named contacts, and acceptance sign-off
 **Requirements:** `PRD.md`  
@@ -422,6 +422,68 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 
 **Validation evidence:** `ListingAndNotificationRegressionTest` passes 2 tests with 12 assertions. It verifies newest-first and role-scoped document rows, both role-specific column sequences, no notification at recipient assignment, notification creation at ready-for-pickup placement for South Campus, persistence after marking read, cross-user deletion denial, and explicit owner deletion. The complete suite passes 129 tests with 633 assertions; Pint, Vite, and `git diff --check` pass. Browser validation shows the five Level 2 records in descending creation order with `DRMS-DISTRICT-2026-000005` first.
 
+#### Local XAMPP and VS Code Runtime
+
+**Status:** Completed
+
+- [x] Revert the Codespaces demo configuration and deployment-only documentation to the pre-deployment application state.
+- [x] Remove public port exposure and stop the temporary Codespace.
+- [x] Verify the installed XAMPP, PHP, and database runtime versions.
+- [x] Retain PHP 8.4 and Oracle MySQL 8.4 while using XAMPP only for local Apache.
+- [x] Create machine-local XAMPP Apache and VS Code task configuration outside source control.
+- [x] Verify Apache configuration, application boot, database migrations, automated tests, formatter, and frontend build.
+- [x] Verify the styled local login page at `http://127.0.0.1:8081/admin`.
+
+**Current evidence:** The repository was restored exactly to commit `3129561` before applying the approved local-only runtime documentation. The installed XAMPP 8.2.12 bundles PHP 8.2.12 and MariaDB 10.4.32, which do not satisfy the approved PHP 8.4 and Oracle MySQL 8.4 constraints. DRMS therefore uses only XAMPP Apache 2.4.58, PHP 8.4.23 from the verified machine toolchain, and the running automatic `DRMSMySQL84` service on `127.0.0.1:3307`. Apache configuration syntax passes; Laravel boots at `http://127.0.0.1:8081`; all 16 migrations are applied; the complete test suite, formatter, and Vite build pass; and browser validation shows the styled authenticated interface without console errors.
+
+#### Post-UAT Correction — New-Account Notifications and Post-Save Navigation
+
+**Status:** Completed and validated
+
+- [x] Diagnose notification delivery for newly created active Level 1 accounts.
+- [x] Restore and verify the local database queue worker without deleting stored notifications.
+- [x] Return Level 2 users to the corresponding resource listing after successful create or edit saves.
+- [x] Add focused notification and redirect regression coverage.
+- [x] Run focused and complete regression checks, formatting, and frontend build.
+- [x] Visually verify the affected local admin workflows.
+
+**Root cause and correction:** Recipient selection already included active matching-unit Level 1 accounts created before placement. Delivery was blocked operationally because two database-queue jobs were pending while no local worker was running. Both jobs completed with zero failures, the approved PHP 8.4 worker is running, and the ignored VS Code worker task now invokes PHP 8.4 explicitly. Notification document links are stored as host-independent application paths, and the 12 existing stored notification URLs were normalized without deleting any notification.
+
+**Validation evidence:** Focused notification and administration regressions pass 37 tests with 189 assertions. The complete suite passes 131 tests with 655 assertions; Pint, the Vite production build, migration status, Laravel boot, and `git diff --check` pass. Browser validation at `http://127.0.0.1:8081/admin` displays the queued ready-for-pickup notifications, resolves their document links on port `8081`, and reports no console warnings or errors. Redirect assertions cover user, organizational-unit, document-type create/edit, document-origin, document-registration, and receiving-box saves; the global Filament panel setting applies the same listing redirect to every managed resource create/edit page.
+
+#### Post-UAT Correction — Safe Deletion and Notification Detail
+
+**Status:** Completed and validated
+
+- [x] Implement Level 2 deletion of Level 1 accounts without removing historical references.
+- [x] Keep Level 2 account deletion prohibited for every role.
+- [x] Implement Level 2 deletion of organizational units only when no dependent data would be orphaned.
+- [x] Audit successful account and organizational-unit deletions.
+- [x] Show document type and subject in ready-for-pickup notifications.
+- [x] Add authorization, dependency, audit, payload, and UI regression coverage.
+- [x] Run focused and complete validations.
+
+**Implementation evidence:** Level 1 accounts and organizational units use reversible soft deletion. User and organizational-unit delete actions are available on their Level 2 list/edit interfaces only when policy authorization succeeds. Level 2 accounts remain non-deletable. Unit deletion is denied when a non-deleted child unit or user, submitting document, recipient assignment, or receiving box exists. Historical actor and unit relationships include soft-deleted records, and successful deletions create permanent `user.deleted` or `organizational_unit.deleted` activity events.
+
+**Notification evidence:** Future ready-for-pickup notification payloads store and display the tracking number, document type, and subject. All 16 existing stored notifications were enriched in place; no notification was deleted. The database queue has zero pending and zero failed jobs, and its PHP 8.4 worker was restarted after the change.
+
+**Validation evidence:** Focused deletion, authorization, notification, and receiving-box regressions pass 33 tests with 159 assertions. The complete suite passes 135 tests with 694 assertions. The new migration is applied and its rollback SQL is verified; Pint, the Vite production build, and `git diff --check` pass. A clean XAMPP browser session displays `Book Delivery: english books`, `Book Delivery: kinder`, and `Appointment: appt` in the corresponding notifications with no console warnings or errors.
+
+#### Post-UAT Correction — Level 1 Dashboard Receiving-Box Access
+
+**Status:** Completed and validated
+
+- [x] Display the matching active receiving-box QR code on the Level 1 dashboard.
+- [x] Provide a dashboard link to the authenticated receiving-box inventory route.
+- [x] Do not expose another organizational unit's box or an inactive box.
+- [x] Show a clear empty state when the unit has no active receiving box.
+- [x] Add focused authorization and rendering regressions.
+- [x] Run focused and complete validation plus browser visual inspection.
+
+**Implementation evidence:** The Level 1 operational dashboard resolves only the authenticated user's active-unit, active receiving box, rechecks `viewInventory` policy authorization, renders the existing secure QR URL, and provides an **Open Campus Box** link. Missing or inactive boxes render an administrator-contact empty state. Level 2 dashboard behavior is unchanged.
+
+**Validation evidence:** The focused Phase 10 suite passes 11 tests with 78 assertions, including matching-unit display, cross-unit isolation, and inactive-box hiding. The complete suite passes 137 tests with 702 assertions. Pint, Blade view compilation, the Vite production build, and `git diff --check` pass. Browser validation for the Panalicsican Elementary School Level 1 account displays its QR, `PES Box` location, and **Open Campus Box** link in a responsive card; the link opens the authenticated inventory with four ready-for-pickup records.
+
 ## 5. Validation Status
 
 | Area | Status | Evidence |
@@ -429,7 +491,7 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 | Documentation baseline | Completed | `PRD.md`, `PLAN.md`, and `TASKS.md` created and cross-checked |
 | Application boot | Completed | `php artisan about` reports Laravel 12.64.0 on PHP 8.4.23; local HTTP request returned 200 |
 | Database migrations | Completed | All 16 migrations are applied to MySQL 8.4 `drms`; clean migration/seeding and restored migration status passed on `drms_test` |
-| Automated tests | Completed | `php artisan test --compact`: 129 tests passed with 633 assertions |
+| Automated tests | Completed | `php artisan test --compact`: 137 tests passed with 702 assertions |
 | Authorization tests | Completed | Phases 1–12 role boundaries, unit isolation, routing and origin-classification permissions, notification/search/report/export/audit scoping, filter-option scoping, direct-route denial, and prohibited workflow actions pass |
 | Formatting | Completed | `vendor/bin/pint --test` passed |
 | Static analysis | Deferred | No static-analysis tool was selected for the clean Phase 0 scaffold |

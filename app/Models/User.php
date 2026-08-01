@@ -12,13 +12,14 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements FilamentUser, HasName
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -59,13 +60,18 @@ class User extends Authenticatable implements FilamentUser, HasName
      */
     public function organizationalUnit(): BelongsTo
     {
-        return $this->belongsTo(OrganizationalUnit::class);
+        return $this->belongsTo(OrganizationalUnit::class)->withTrashed();
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
         return $panel->getId() === 'admin'
-            && $this->status === OperationalStatus::Active;
+            && $this->status === OperationalStatus::Active
+            && ($this->isLevelTwo() || (
+                $this->organizationalUnit !== null
+                && ! $this->organizationalUnit->trashed()
+                && $this->organizationalUnit->status === OperationalStatus::Active
+            ));
     }
 
     public function getFilamentName(): string

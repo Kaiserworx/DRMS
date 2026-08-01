@@ -19,6 +19,8 @@ class DocumentWorkflowNotification extends Notification implements ShouldQueueAf
         public readonly int $documentId,
         public readonly string $trackingNumber,
         public readonly DocumentNotificationType $eventType,
+        public readonly string $documentType,
+        public readonly string $subject,
         public readonly string $title,
         public readonly string $message,
         public readonly string $safeUrl,
@@ -64,6 +66,8 @@ class DocumentWorkflowNotification extends Notification implements ShouldQueueAf
             'document_id' => $this->documentId,
             'tracking_number' => $this->trackingNumber,
             'event_type' => $this->eventType->value,
+            'document_type' => $this->documentType,
+            'subject' => $this->subject,
             'url' => $this->safeUrl,
         ];
     }
@@ -74,7 +78,7 @@ class DocumentWorkflowNotification extends Notification implements ShouldQueueAf
             ->subject("DRMS: {$this->title}")
             ->line($this->message)
             ->line("Tracking number: {$this->trackingNumber}")
-            ->action('View document', $this->safeUrl);
+            ->action('View document', url($this->safeUrl));
     }
 
     public function databaseType(object $notifiable): string

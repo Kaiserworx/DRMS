@@ -73,6 +73,27 @@ class SignificantActivityObserver
         );
     }
 
+    public function deleted(Model $model): void
+    {
+        $values = [];
+
+        foreach ($this->auditedFields($model) as $field) {
+            if ($field === 'password') {
+                continue;
+            }
+
+            if (array_key_exists($field, $model->getAttributes())) {
+                $values[$field] = $this->normalize($model->getAttribute($field));
+            }
+        }
+
+        $this->audit->record(
+            $this->eventPrefix($model).'.deleted',
+            $model,
+            ['values' => $values],
+        );
+    }
+
     /**
      * @return list<string>
      */

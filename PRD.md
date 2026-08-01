@@ -157,8 +157,11 @@ The product must:
 - Require an active organizational unit for Level 1 users.
 - Permit Level 2 users to have no organizational-unit assignment.
 - Restrict deployment settings, organizational units, and user administration to Level 2.
+- Allow Level 2 users to remove Level 1 accounts while preserving historical document, transaction, claim, token-audit, and activity-audit references. Level 1 and Level 2 users may not delete Level 2 accounts.
+- Allow Level 2 users to delete organizational units only when deletion cannot orphan a child unit, user, document, recipient assignment, or receiving box.
 - Provide a profile page with limited self-editing.
 - Validate unique login identifiers and strong passwords.
+- After a Level 2 user successfully creates or edits a managed resource, return them to that resource's listing rather than leaving them on the create, edit, or detail page.
 
 ### 6.2 Organizational Units
 
@@ -266,6 +269,7 @@ Status and location must not be freely editable. Controllers and user-interface 
 - Prevent inactive boxes from accepting placements.
 - Make token regeneration invalidate the old token and create an audit record.
 - Provide Level 2 box administration, QR image generation, printable labels, physical location, and inventory preview.
+- Display the authenticated Level 1 user's own active receiving-box QR code and inventory link on their dashboard; do not display another unit's box or an inactive box.
 
 ### 6.9 Claims
 
@@ -284,6 +288,7 @@ One claim submission should be atomic. The system must revalidate and protect ea
 
 - Store in-system notifications.
 - Notify active Level 1 users of the matching organizational unit only after Level 2 places their recipient record in the unit's receiving box and it becomes ready for pickup.
+- Include the document type and subject in each ready-for-pickup notification.
 - Do not create Level 1 notifications for recipient assignment alone, ordinary status changes, upstream movement, cancellation, correction, or unclaimed reminders.
 - Avoid duplicate notifications for repeated actions.
 - Keep notification failures from corrupting document workflow state.
@@ -302,6 +307,7 @@ Search must be scoped, paginated, and implemented without organizational-unit le
 ### 6.12 Dashboards, Reports, and Exports
 
 - Provide role-specific dashboard counts for the operational states listed in the source specification.
+- Provide each Level 1 user dashboard access to the matching unit's active receiving-box QR code and authenticated inventory link.
 - Provide the approved operational reports for documents, recipients, transactions, receiving-box inventory, unclaimed and claimed items, cancellations, and monthly movement.
 - Define processing-time and pickup-time metrics before implementing averages.
 - Apply on-screen authorization scope to exports.

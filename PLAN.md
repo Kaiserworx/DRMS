@@ -340,7 +340,19 @@ A phase is complete only when all applicable conditions are verified:
 
 Each completion report must identify changes, files, migrations, authorization and validation rules, tests, commands and results, manual checks, limitations, and an `APPROVE PHASE` or `DO NOT APPROVE PHASE` recommendation.
 
-## 5. Defect Handling
+## 5. Post-UAT Corrections
+
+Corrections approved after technical UAT must preserve the completed phase requirements and pass focused plus full regression checks.
+
+- Keep database-queued ready-for-pickup notifications operational in the approved local VS Code/XAMPP runtime, including delivery to active matching-unit Level 1 accounts created before placement.
+- Configure successful Filament resource create and edit actions to return Level 2 users to the corresponding resource listing.
+- Validate the notification backlog and future delivery, global resource redirect configuration, representative create/edit workflows, and existing authorization boundaries.
+- Add audited Level 2 deletion of Level 1 accounts using history-preserving soft deletion; keep Level 2 accounts protected from deletion.
+- Add audited deletion of organizational units only when no hierarchy, account, document, recipient, or receiving-box reference would be orphaned.
+- Include document type and subject in ready-for-pickup notification payloads and validate database-queued rendering.
+- Add the matching active receiving-box QR code and authenticated inventory link to the Level 1 dashboard, with unit-isolation and inactive/missing-box validation.
+
+## 6. Defect Handling
 
 When a phase fails:
 
