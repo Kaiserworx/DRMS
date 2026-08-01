@@ -8,14 +8,19 @@
 
 ### Vercel Preview Deployment
 
-**Status:** In Progress
+**Status:** Blocked
 
 - [x] Receive explicit authorization for a GitHub-linked Vercel preview deployment.
-- [ ] Create and push the `codex/vercel-deployment` branch.
-- [ ] Add the minimal PHP 8.4 serverless entry point, asset handler, Vercel configuration, and deployment exclusions.
-- [ ] Validate the deployment configuration, frontend build, and application regression suite.
+- [x] Create and push the `codex/vercel-deployment` branch.
+- [x] Add the minimal PHP 8.4 serverless entry point, asset handler, Vercel configuration, and deployment exclusions.
+- [x] Validate the deployment configuration, frontend build, and application regression suite.
+- [x] Link the GitHub repository to the Vercel project, track `codex/vercel-deployment` as the production branch, rotate `APP_KEY`, and deploy commit `b617bd2` successfully.
+- [x] Verify the deployed `/up` health endpoint responds successfully over HTTPS.
 - [ ] Configure Vercel secrets and an external TLS-protected MySQL 8.4 database.
-- [ ] Deploy and complete HTTPS, login, authorization, asset, database, queue, and QR smoke checks.
+- [ ] Provision a separate persistent queue worker and scheduler using the same release and database.
+- [ ] Complete login, authorization, asset, database, queue, and QR smoke checks.
+
+The Vercel build is ready at `https://drms-vercel-preview.vercel.app`, and the framework health route is operational. The application root currently returns HTTP 500 because no remotely reachable MySQL 8.4 connection has been configured; this is the blocking infrastructure prerequisite for functional smoke testing. Vercel's serverless deployment also does not provide the required persistent queue worker and scheduler.
 
 The preview remains separate from pilot/production approval. The Phase 12 release recommendation stays `NOT READY FOR PILOT RELEASE` until its existing acceptance blockers are resolved.
 **Requirements:** `PRD.md`  
