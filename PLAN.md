@@ -351,6 +351,7 @@ Corrections approved after technical UAT must preserve the completed phase requi
 - Add audited deletion of organizational units only when no hierarchy, account, document, recipient, or receiving-box reference would be orphaned.
 - Include document type and subject in ready-for-pickup notification payloads and validate database-queued rendering.
 - Add the matching active receiving-box QR code and authenticated inventory link to the Level 1 dashboard, with unit-isolation and inactive/missing-box validation.
+- Add a guarded local database-refresh command and a refresh-aware Windows queue-worker supervisor so notification processing resumes automatically after queue/cache tables are recreated.
 
 ## 6. Defect Handling
 

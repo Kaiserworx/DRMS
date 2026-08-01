@@ -44,18 +44,7 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        User::query()->updateOrCreate(
-            ['email' => 'admin@drms.local'],
-            [
-                'organizational_unit_id' => null,
-                'full_name' => 'DRMS Records Administrator',
-                'position' => 'Records Administrator',
-                'username' => 'admin',
-                'password' => $demoPassword,
-                'role' => UserRole::LevelTwo,
-                'status' => OperationalStatus::Active,
-            ],
-        );
+        $this->call(AdminUserSeeder::class);
 
         User::query()->updateOrCreate(
             ['email' => 'encoder@drms.local'],

@@ -484,14 +484,31 @@ Deployment, backup/restore, rollback, deployment-profile/hierarchy migration, pi
 
 **Validation evidence:** The focused Phase 10 suite passes 11 tests with 78 assertions, including matching-unit display, cross-unit isolation, and inactive-box hiding. The complete suite passes 137 tests with 702 assertions. Pint, Blade view compilation, the Vite production build, and `git diff --check` pass. Browser validation for the Panalicsican Elementary School Level 1 account displays its QR, `PES Box` location, and **Open Campus Box** link in a responsive card; the link opens the authenticated inventory with four ready-for-pickup records.
 
+#### Post-UAT Correction — Refresh-Safe Notification Processing
+
+**Status:** Completed and validated
+
+- [x] Add an exact-target, local-only destructive refresh command.
+- [x] Seed only the Level 2 administrator during the guarded refresh.
+- [x] Pause and automatically recover the database queue worker across queue/cache table recreation.
+- [x] Update the ignored local VS Code task to use the tracked resilient worker supervisor.
+- [x] Verify a post-refresh queued notification is processed without manual worker recreation.
+- [x] Run focused and complete regression, formatting, build, and secret-hygiene checks.
+
+**Implementation evidence:** `drms:refresh-local --force` refuses non-local environments and any database target other than MySQL `127.0.0.1:3307/drms`, requires the untracked demo password, coordinates maintenance mode and a refresh sentinel, applies all migrations, and seeds only the Level 2 administrator. The tracked Windows worker supervisor pauses during the refresh, removes only a stale sentinel after its safety timeout, and restarts queue processing after refresh or an unexpected worker exit. The ignored local VS Code worker task invokes the supervisor with the approved PHP 8.4 executable.
+
+**Operational validation:** The guarded command replaced the local `drms` database, applied all 17 migrations, produced exactly one active Level 2 administrator and zero Level 1 users, and returned the application from maintenance mode. The same supervisor process remained active. A temporary post-refresh Level 1 database notification entered the `notifications` queue, was stored automatically within five seconds, and left zero pending and zero failed jobs. All smoke records were then removed; the refreshed database again contains only the administrator account and no organizational units, documents, notifications, pending jobs, or failed jobs.
+
+**Automated validation:** The focused admin-seeder, environment-guard, notification, and listing regressions pass 12 tests with 56 assertions. The complete suite passes 139 tests with 713 assertions. Pint, Blade compilation, the Vite production build, PowerShell syntax validation, Composer audit, npm audit, and `git diff --check` pass; both dependency audits report zero known vulnerabilities.
+
 ## 5. Validation Status
 
 | Area | Status | Evidence |
 |---|---|---|
 | Documentation baseline | Completed | `PRD.md`, `PLAN.md`, and `TASKS.md` created and cross-checked |
 | Application boot | Completed | `php artisan about` reports Laravel 12.64.0 on PHP 8.4.23; local HTTP request returned 200 |
-| Database migrations | Completed | All 16 migrations are applied to MySQL 8.4 `drms`; clean migration/seeding and restored migration status passed on `drms_test` |
-| Automated tests | Completed | `php artisan test --compact`: 137 tests passed with 702 assertions |
+| Database migrations | Completed | All 17 migrations are applied to MySQL 8.4 `drms`; clean migration/seeding and restored migration status passed on `drms_test` |
+| Automated tests | Completed | `php artisan test --compact`: 139 tests passed with 713 assertions |
 | Authorization tests | Completed | Phases 1–12 role boundaries, unit isolation, routing and origin-classification permissions, notification/search/report/export/audit scoping, filter-option scoping, direct-route denial, and prohibited workflow actions pass |
 | Formatting | Completed | `vendor/bin/pint --test` passed |
 | Static analysis | Deferred | No static-analysis tool was selected for the clean Phase 0 scaffold |

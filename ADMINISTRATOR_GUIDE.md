@@ -50,6 +50,8 @@ This guide covers application administration. Server, database, DNS, TLS, backup
 
 Run a monitored database queue worker and the scheduler. Restart queue workers after deployment. Level 1 notifications are queued only when Level 2 places a recipient record in its receiving box and makes it ready for pickup. Each notification shows the tracking number, document type, and subject. Email stays off until delivery is approved and tested.
 
+On the approved local Windows runtime, run `scripts\run-notification-worker.ps1` through the VS Code queue-worker task. Use `php artisan drms:refresh-local --force` for an explicitly approved destructive local reset. The refresh command pauses the supervised worker while queue/cache tables are recreated, seeds only the local Level 2 administrator, and allows notification processing to resume automatically afterward.
+
 Review failed jobs, correct the root cause, and retry only after confirming that idempotency protections prevent duplicate notifications.
 
 ## 7. Reports, Exports, and Audit Review

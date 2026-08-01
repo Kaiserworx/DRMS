@@ -63,7 +63,7 @@ php artisan migrate --seed
 npm run build
 ```
 
-In VS Code, run the **DRMS: Start Local XAMPP Workspace** task. It starts a dedicated XAMPP Apache instance on `127.0.0.1:8081`, the notification queue worker, and the Vite development server. Open `http://127.0.0.1:8081/admin`.
+In VS Code, run the **DRMS: Start Local XAMPP Workspace** task. It starts a dedicated XAMPP Apache instance on `127.0.0.1:8081`, the refresh-aware notification queue worker, and the Vite development server. Open `http://127.0.0.1:8081/admin`.
 
 Do not start XAMPP MySQL for DRMS. The application remains connected to the dedicated Oracle MySQL 8.4 service on port 3307.
 
@@ -76,11 +76,13 @@ No default password is committed. Demo users are never seeded in production.
 
 ## Notification Delivery
 
-In-system notifications are stored and delivered through Laravel's configured queue. Run a queue worker in every environment that requires notification delivery:
+In-system notifications are stored and delivered through Laravel's configured queue. On the approved local Windows runtime, use the tracked worker supervisor:
 
 ```powershell
-php artisan queue:work --queue=notifications,default
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-notification-worker.ps1
 ```
+
+The supervisor restarts a worker that exits and pauses safely while `drms:refresh-local` temporarily recreates the database queue and cache tables. The ignored VS Code queue-worker task invokes this script with the approved PHP 8.4 executable. Other environments still require their approved process supervisor to keep `php artisan queue:work --queue=notifications,default` running.
 
 Level 1 receives a notification only when Level 2 places that unit's recipient record in its receiving box and makes it ready for pickup. Read notifications remain in the list until the owning user explicitly deletes them.
 
@@ -89,6 +91,16 @@ Email is disabled by default because production email infrastructure is not yet 
 ```dotenv
 DRMS_NOTIFICATION_EMAIL_ENABLED=true
 ```
+
+## Guarded Local Database Refresh
+
+The following command permanently replaces only the approved local MySQL target `127.0.0.1:3307/drms`, applies all migrations, and seeds only the Level 2 administrator from the untracked `DRMS_DEMO_PASSWORD` value:
+
+```powershell
+php artisan drms:refresh-local --force
+```
+
+The command refuses non-local, non-MySQL, or differently named database targets. It coordinates with the refresh-aware worker so notification processing resumes after the queue/cache tables are recreated. Do not substitute this command for the separate `drms_test` migration check, backup rehearsal, or any production operation.
 
 ## Test Database
 

@@ -296,6 +296,7 @@ One claim submission should be atomic. The system must revalidate and protect ea
 - Keep read and unread notifications in the user's notification list. Opening or marking a notification as read must not delete it.
 - Delete a stored notification only through an explicit manual action by its owning user.
 - Use queued delivery when supported by the deployment.
+- In the approved local Windows runtime, notification processing must automatically recover after an intentional local database refresh so post-refresh notifications do not remain pending because the worker exited while queue tables were unavailable.
 - Email delivery is optional; it must either be tested and operational or explicitly feature-flagged and documented.
 
 ### 6.11 Search
